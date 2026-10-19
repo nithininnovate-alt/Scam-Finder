@@ -402,3 +402,14 @@
   @keyframes rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
   .ledger { background-image: repeating-linear-gradient(to bottom, transparent 0 27px, hsl(var(--border)) 27px 28px); }
 }
+@layer utilities {
+  .reveal { opacity: 0; transform: translateY(24px); transition: opacity .8s cubic-bezier(.2,.7,.2,1), transform .8s cubic-bezier(.2,.7,.2,1); }
+  .reveal.in { opacity: 1; transform: none; }
+  .photo-zoom img { transition: transform 1.2s cubic-bezier(.2,.7,.2,1); }
+  .photo-zoom:hover img { transform: scale(1.04); }
+  @media (prefers-reduced-motion: reduce) {
+    .reveal { opacity: 1; transform: none; transition: none; }
+    .photo-zoom img, .photo-zoom:hover img { transition: none; transform: none; }
+    .rise { animation: none; }
+  }
+}

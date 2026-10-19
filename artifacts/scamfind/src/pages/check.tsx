@@ -4,6 +4,7 @@ import { Link, useLocation } from 'wouter';
 import { useQueryClient } from '@tanstack/react-query';
 import {
   useCreateScan,
+  useUploadPdfScan,
   useGetSummary,
   getGetSummaryQueryKey,
   getListScansQueryKey,
@@ -21,6 +22,9 @@ import { PageHeader } from '@/components/shell';
 import { ErrorPanel, ScoreBar, VerdictBadge } from '@/components/scan-bits';
 import { MAX_CHARS, MAX_FILE, download, errorMessage, parseCsv, relative, scansToCsv } from '@/lib/scan-utils';
 import { cn } from '@/lib/utils';
+import { LinkConsent } from '@/components/link-consent';
+
+const MAX_PDF = 5 * 1024 * 1024;
 
 const SAMPLES = [
   {
@@ -76,6 +80,9 @@ function SingleForm() {
   const qc = useQueryClient();
   const { toast } = useToast();
   const createScan = useCreateScan();
+  const uploadPdf = useUploadPdfScan();
+  const [pdfFile, setPdfFile] = useState<File | null>(null);
+  const [checkLinks, setCheckLinks] = useState(false);
   const [text, setText] = useState('');
   const [sender, setSender] = useState('');
   const [title, setTitle] = useState('');
@@ -87,13 +94,24 @@ function SingleForm() {
   const fileRef = useRef<HTMLInputElement>(null);
 
   const over = text.length > MAX_CHARS;
-  const canSubmit = text.trim().length > 0 && !over && !createScan.isPending;
+  const pending = createScan.isPending || uploadPdf.isPending;
+  const canSubmit = (pdfFile ? true : text.trim().length > 0 && !over) && !pending;
 
   async function readFile(f: File) {
     setErr(null);
     const ext = f.name.toLowerCase().split('.').pop();
+    if (ext === 'pdf') {
+      if (f.size > MAX_PDF) { setErr('That PDF is over 5 MB. Try exporting only the offer pages.'); return; }
+      setPdfFile(f);
+      setText('');
+      setFileName(f.name);
+      setMode('upload');
+      setSample(null);
+      if (!title) setTitle(f.name.replace(/\.[^.]+$/, ''));
+      return;
+    }
     if (!["txt", "html", "eml"].includes(ext ?? '')) {
-      setErr(ext === 'msg' ? 'Outlook .msg files are not supported yet. Save the message as .eml or paste its text.' : 'Supported files: .txt, .html, .eml');
+      setErr(ext === 'msg' ? 'Outlook .msg files are not supported yet. Save the message as .eml or paste its text.' : 'Supported files: .pdf, .txt, .html, .eml');
       return;
     }
     if (f.size > MAX_FILE) {
@@ -101,6 +119,7 @@ function SingleForm() {
       return;
     }
     const content = await f.text();
+    setPdfFile(null);
     setText(content);
     setFileName(f.name);
     setMode('upload');
@@ -120,6 +139,7 @@ function SingleForm() {
     setSender(s.sender);
     setTitle(s.title);
     setFileName(null);
+    setPdfFile(null);
     setMode('paste');
     setSample(s.label);
     setErr(null);
@@ -130,6 +150,8 @@ function SingleForm() {
     setSender('');
     setTitle('');
     setFileName(null);
+    setPdfFile(null);
+    setCheckLinks(false);
     setSample(null);
     setMode('paste');
     setErr(null);
@@ -138,9 +160,12 @@ function SingleForm() {
   async function submit() {
     setErr(null);
     try {
-      const scan = await createScan.mutateAsync({
+      const scan = pdfFile
+        ? await uploadPdf.mutateAsync({ data: { file: pdfFile, sender: sender.trim() || undefined, title: title.trim() || undefined, checkLinks: checkLinks ? 'true' : 'false' } })
+        : await createScan.mutateAsync({
         data: {
           text,
+          checkLinks,
           sender: sender.trim() || undefined,
           title: title.trim() || undefined,
           fileName: fileName ?? undefined,
@@ -180,6 +205,23 @@ function SingleForm() {
         </div>
       </div>
 
+      {pdfFile ? (
+        <div onDragOver={(e) => { e.preventDefault(); setDrag(true); }} onDragLeave={() => setDrag(false)} onDrop={onDrop}
+          className={cn('relative overflow-hidden rounded-xl border bg-secondary/40 p-5 rise', drag && 'ring-4 ring-accent/20')} data-testid="panel-pdf-selected">
+          <div className="ledger pointer-events-none absolute inset-0 opacity-30" />
+          <div className="relative flex items-start gap-4">
+            <span className="grid h-12 w-10 shrink-0 place-items-center rounded-md border bg-card font-mono text-[10px] font-semibold text-alert">PDF</span>
+            <div className="min-w-0 flex-1">
+              <div className="truncate font-mono text-sm" data-testid="text-pdf-file">{pdfFile.name}</div>
+              <div className="text-xs text-muted-foreground">{(pdfFile.size / 1024).toFixed(1)} KB · up to 5 MB and 20 pages</div>
+              <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+                {uploadPdf.isPending ? 'Uploading and extracting the text layer on the server…' : 'On submit, the server extracts the PDF\'s text and screens it like a pasted message. The file itself is not stored. Scanned images are not read (no OCR), and a result says nothing about whether the document is authentic. Password-protected or image-only PDFs will be returned with instructions.'}
+              </p>
+            </div>
+            <button onClick={clear} disabled={pending} className="rounded p-1 hover:bg-background" aria-label="Remove PDF" data-testid="button-remove-pdf"><X className="h-4 w-4" /></button>
+          </div>
+        </div>
+      ) : (
       <div
         onDragOver={(e) => { e.preventDefault(); setDrag(true); }}
         onDragLeave={() => setDrag(false)}
@@ -195,7 +237,7 @@ function SingleForm() {
         />
         {drag && (
           <div className="pointer-events-none absolute inset-0 grid place-items-center rounded-xl bg-accent/10 font-display text-lg text-primary">
-            Drop to read as plain text
+            Drop a .pdf, .txt, .html or .eml file
           </div>
         )}
         <div className="flex flex-wrap items-center justify-between gap-2 border-t px-3 py-2 text-xs text-muted-foreground">
@@ -205,13 +247,13 @@ function SingleForm() {
               className="inline-flex items-center gap-1.5 rounded-md px-2 py-1 font-medium text-primary hover:bg-secondary"
               data-testid="button-upload"
             >
-              <FileUp className="h-3.5 w-3.5" /> Upload .txt, .html or .eml
+              <FileUp className="h-3.5 w-3.5" /> Upload .pdf, .txt, .html or .eml
             </button>
-            <span className="hidden sm:inline">or drag a file in · 1 MB max · .msg not supported yet</span>
+            <span className="hidden sm:inline">or drag a file in · PDF 5 MB, others 1 MB · .msg not supported yet</span>
             <input
               ref={fileRef}
               type="file"
-              accept=".txt,.html,.eml"
+              accept=".pdf,application/pdf,.txt,.html,.eml"
               className="hidden"
               onChange={(e) => { const f = e.target.files?.[0]; if (f) void readFile(f); e.target.value = ''; }}
               data-testid="input-file"
@@ -222,8 +264,9 @@ function SingleForm() {
           </span>
         </div>
       </div>
+      )}
 
-      {fileName && (
+      {fileName && !pdfFile && (
         <div className="flex items-center gap-2 rounded-lg bg-secondary px-3 py-2 text-xs rise">
           <FileText className="h-3.5 w-3.5 text-primary" />
           Loaded <span className="font-mono">{fileName}</span> as text. HTML is never run; the server strips tags and reads email headers.
@@ -242,21 +285,23 @@ function SingleForm() {
         </div>
       </div>
 
+      <LinkConsent checked={checkLinks} onChange={setCheckLinks} disabled={pending} />
+
       {err && <div className="rounded-lg bg-alert-soft px-3 py-2 text-sm text-alert rise" data-testid="text-form-error">{err}</div>}
       {over && <div className="text-sm text-alert">That is over 200,000 characters. Trim it to the offer itself.</div>}
 
       <div className="flex flex-wrap items-center gap-3">
         <Button size="lg" onClick={submit} disabled={!canSubmit} className="group h-12 px-6 text-base" data-testid="button-analyse">
-          {createScan.isPending ? (
-            <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Reading the evidence…</>
+          {pending ? (
+            <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> {pdfFile ? 'Extracting PDF text…' : 'Reading the evidence…'}</>
           ) : (
             <>Analyse this offer <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" /></>
           )}
         </Button>
-        {text && !createScan.isPending && (
+        {(text || pdfFile) && !pending && (
           <Button variant="ghost" onClick={clear} data-testid="button-clear">Clear</Button>
         )}
-        <span className="text-xs text-muted-foreground">Text signals and available domain checks. Usually a few seconds.</span>
+        <span className="text-xs text-muted-foreground">Text signals, available domain checks and, if ticked, link lookups. Usually a few seconds.</span>
       </div>
     </div>
   );
@@ -269,6 +314,7 @@ function BatchForm() {
   const createScan = useCreateScan();
   const [rows, setRows] = useState<RowResult[]>([]);
   const [running, setRunning] = useState(false);
+  const [checkLinks, setCheckLinks] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const ref = useRef<HTMLInputElement>(null);
 
@@ -295,7 +341,7 @@ function BatchForm() {
       else {
         try {
           const scan = await createScan.mutateAsync({
-            data: { text, sender: (si >= 0 ? r[si]?.trim() : '') || undefined, title: (li >= 0 ? r[li]?.trim() : '') || undefined, source: 'batch' },
+            data: { text, sender: (si >= 0 ? r[si]?.trim() : '') || undefined, title: (li >= 0 ? r[li]?.trim() : '') || undefined, source: 'batch', checkLinks },
           });
           res = { ...init[i], status: 'ok', scan };
         } catch (e) {
@@ -331,6 +377,7 @@ function BatchForm() {
         </div>
         <input ref={ref} type="file" accept=".csv,text/csv" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) void run(f); e.target.value = ''; }} data-testid="input-batch-file" />
       </div>
+      <LinkConsent id="check-links-batch" checked={checkLinks} onChange={setCheckLinks} disabled={running} />
       {err && <div className="rounded-lg bg-alert-soft px-3 py-2 text-sm text-alert">{err}</div>}
       {rows.length > 0 && (
         <div className="space-y-3 rise">
@@ -450,7 +497,7 @@ export default function CheckPage() {
           </div>
           <p className="flex gap-2 text-xs leading-relaxed text-muted-foreground">
             <Info className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-            ScamFind uses transparent rules, not a trained model or paid reputation services. Results are a risk indicator, not a probability or a guarantee.
+            ScamFind uses transparent rules, not a trained model. Link lookups with Google Web Risk run only if you opt in. Results are a risk indicator, not a probability or a guarantee.
           </p>
         </aside>
       </div>

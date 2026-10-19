@@ -15,6 +15,10 @@ export function sendReport(scan: Scan, res: Response) {
   line(`Case: ${scan.id}\nScreened (UTC): ${scan.createdAt}\nEngine: ${scan.engineVersion}\nStatus: ${scan.status}`);
   title(`${scan.verdict} — Risk indicator ${scan.score}/100`);
   line(scan.confidence);
+  if (scan.pdfSource) {
+    title("PDF text extraction");
+    line(`${scan.pdfSource.fileName} / ${scan.pdfSource.pages} page(s)\n${scan.pdfSource.warning}`);
+  }
   line("This screening is not proof of fraud or legitimacy and is not a legal finding. No benchmark accuracy claim is made.");
   title("Sender and evidence integrity");
   line(`Sender: ${scan.sender || "Not supplied"}\nDomain: ${scan.domain || "Not supplied"}\nSHA-256 of submitted UTF-8 source text:\n${scan.hash}`);
@@ -27,12 +31,17 @@ export function sendReport(scan: Scan, res: Response) {
   }
   title("Check coverage");
   for (const check of scan.checks) line(`${check.name} [${check.status}]\n${check.detail}`);
+  if (scan.urlChecks?.length) {
+    title("Opt-in Google Web Risk results");
+    scan.urlChecks.forEach(check => line(`${check.url.replace(/^http/i, "hxxp").replace(/\./g, "[.]")} [${check.status}]\n${check.threatTypes.join(", ")}\n${check.detail}\nChecked (UTC): ${check.checkedAt}`));
+    line("Queries exclude URL query strings and fragments. A no-match result is not proof that a site or offer is safe.");
+  }
   title("Your verification checklist");
   scan.checklist.forEach((item, index) => line(`${index + 1}. ${item}`));
   title("Reporting guidance");
   line("India: cybercrime.gov.in / urgent financial fraud helpline 1930\nCERT-In: incident@cert-in.org.in\nUS: reportfraud.ftc.gov\nInternational phishing: reportphishing@apwg.org\nNo complaint has been submitted on your behalf.");
-  title("Extracted URLs (not opened or verified)");
-  scan.links.forEach(url => line(url));
+  title("Extracted URLs (not opened; not an endorsement)");
+  scan.links.forEach(url => line(url.replace(/^http/i, "hxxp").replace(/\./g, "[.]")));
   if (!scan.links.length) line("No URLs extracted.");
   title("Original headers");
   line(scan.headers || "Not available for this input.");

@@ -34,21 +34,25 @@ A job-offer screening web application with explainable risk indicators, evidence
 ## Architecture decisions
 
 - This is an initial phased release of the attached PRD, not its production go-live checklist. Never claim measured accuracy, legal certainty or verified company identity without supporting benchmark or provider results.
-- Public MX/DNS and RDAP are available; paid reputation/identity sources and ML are explicitly unconnected. Missing checks must not be presented as passed.
+- Public MX/DNS and RDAP are available. Google Web Risk URL lookups are opt-in and require an enabled API/billing project. Other reputation/identity sources and ML remain unconnected. Missing or failed checks must not be presented as passed.
 - Managed sign-in identifies users; application database roles enforce admin/user permissions on the server. Never assign administrator access to the first registrant or accept a client-supplied role.
 - Account histories use a separate ownership namespace from legacy anonymous browser scans. Move legacy scans only after explicit opt-in from a signed-in user holding the original signed browser cookie. Legacy anonymous material is excluded from administrator review until imported.
 - The PRD has conflicting retention statements: favor its privacy-first 90-day routine retention; explicitly escalated cases receive up to 24 months. A scheduled purge runs hourly.
-- Uploaded text is parsed transiently. Email attachments are never executed or retained. Hashes cover submitted UTF-8 source text, not original file bytes; exports are screening evidence, not certified forensic custody.
+- Uploads are parsed transiently; original PDF/email attachment bytes are never executed or retained. Report hashes cover submitted UTF-8 source text (extracted text for PDFs). PDF provenance separately records an original-byte hash in the timeline; exports are not certified forensic custody.
 
 ## Product
 
-- Paste or upload `.txt`, `.html`, `.eml`; optional sender; 42 weighted text/sender signals across nine categories.
+- Paste or upload `.txt`, `.html`, `.eml`, or text-based `.pdf`; optional sender; 42 weighted text/sender rules across nine categories plus any actual opt-in URL-list findings.
+- PDF uploads are limited to 5 MB and 20 pages, parsed sequentially in isolated, memory/time-bounded workers. Password-protected, unreadable and image-only documents fail explicitly. No OCR, visual authenticity or attachment malware claims.
+- Google Web Risk checks up to five normalized public HTTP(S) URLs per consenting scan, strips query strings/fragments and skips credentials/private hosts. A database-backed daily cap bounds usage across instances. No-match does not establish safety.
+- The Integrations page exposes opt-in user case-update emails and role-protected sender/test/connection controls. Resend requires a sender address on a verified domain; its send-only connection cannot list or verify domains.
+- Reviewer status/notes edits and opted-in email events are saved atomically. A durable outbox rechecks consent and verified primary recipient at dispatch, retries transient failures with an idempotency key and expires delivery metadata after 30 days. Test emails require an explicit administrator action and go only to that administrator's verified address. Offer text and notes are excluded.
 - Explainable verdict, snippets, domain age/mail records, coverage limitations and verification checklist.
 - Account-scoped saved scans across devices, case status/notes, feedback, timeline, PDF export and batch CSV screening.
 - Public landing page and branded sign-in/sign-up; separate personal dashboard and admin overview with account/case review.
 - Administrators can review account-owned scans and update status/notes with actor-attributed audit entries; ordinary users cannot access other users' reports.
 - Reporting guidance for official India, US and phishing-reporting destinations; never claim automatic complaint submission.
-- Deferred: `.msg`, analyst assignment/severity workflows, inbound forwarding, browser extension/share sheet, commercial providers, trained classifier and validated accuracy/compliance.
+- Deferred: `.msg`, OCR/image authenticity, analyst assignment/severity workflows, inbound forwarding, browser extension/share sheet, remaining commercial providers, trained classifier and validated accuracy/compliance. Payments are not connected; no charges or paid scan allowance are represented as active.
 
 ## User preferences
 
@@ -56,7 +60,7 @@ A job-offer screening web application with explainable risk indicators, evidence
 
 ## Gotchas
 
-- Do not fetch offer URLs or render uploaded HTML. External network calls go only to fixed DNS/RDAP services.
+- Do not fetch offer URLs or render uploaded HTML. External calls use fixed DNS/RDAP, Google Web Risk, identity-provider and email-service endpoints; never target arbitrary URLs supplied in offers.
 - Do not seed realistic-looking public cases or fabricate usage, provider findings or accuracy metrics.
 
 ## Pointers

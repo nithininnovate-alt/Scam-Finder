@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, index } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, index, boolean } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 
 export const accountsTable = pgTable("scamfind_accounts", {
@@ -6,6 +6,7 @@ export const accountsTable = pgTable("scamfind_accounts", {
   email: text("email").notNull(),
   name: text("name").notNull(),
   role: text("role", { enum: ["user", "admin"] }).notNull().default("user"),
+  emailAlerts: boolean("email_alerts").notNull().default(false),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 }, (table) => [index("scamfind_accounts_email_idx").on(table.email)]);
 

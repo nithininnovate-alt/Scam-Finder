@@ -11,5 +11,7 @@ export type ProviderStatus = typeof ProviderStatus[keyof typeof ProviderStatus];
 
 export const ProviderStatus = {
   active: 'active',
+  configured: 'configured',
   not_connected: 'not_connected',
+  error: 'error',
 } as const;

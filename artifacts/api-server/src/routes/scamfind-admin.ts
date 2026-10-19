@@ -7,7 +7,8 @@ import {
 } from "@workspace/api-zod";
 import { requireAdmin } from "../middlewares/scamfind-account";
 import { adminCases, recordCaseUpdate } from "../lib/scamfind-admin";
-import { saveScan } from "../lib/scamfind-store";
+import { saveReviewedScan, processEmailQueue } from "../lib/scamfind-email";
+import { logger } from "../lib/logger";
 import { sendReport } from "../lib/scamfind-report";
 
 const router = Router();
@@ -49,8 +50,11 @@ router.patch("/scans/:id", async (req, res): Promise<void> => {
   if (!params.success || !body.success) { res.status(400).json({ error: "Invalid case update." }); return; }
   const [item] = await adminCases(params.data.id);
   if (!item) { res.status(404).json({ error: "Case not found." }); return; }
+  const statusChanged = !!body.data.status && body.data.status !== item.scan.status;
+  const noteChanged = body.data.notes !== undefined && body.data.notes !== item.scan.notes;
   recordCaseUpdate(item.scan, body.data, `Admin ${res.locals.account.id}`);
-  await saveScan(`account:${item.ownerId}`, item.scan);
+  await saveReviewedScan(item.ownerId, item.scan, statusChanged || noteChanged, noteChanged);
+  void processEmailQueue().catch(() => logger.error("Email queue could not be processed"));
   res.json(UpdateAdminScanResponse.parse(item.scan));
 });
 

@@ -19,3 +19,4 @@
 
 export * from "./scans";
 export * from "./accounts";
+export * from "./integrations";

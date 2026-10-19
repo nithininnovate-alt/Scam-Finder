@@ -177,7 +177,7 @@ export default function Landing() {
           <div>
             <h2 className="text-2xl font-semibold md:text-3xl">What ScamFind is not.</h2>
             <p className="mt-3 max-w-3xl text-[15px] leading-relaxed text-muted-foreground">
-              It is not a trained model, a paid reputation service or a background check. It runs transparent, weighted rules and the public domain checks that are available, and it tells you which checks it could not run. A low score alone does not verify an offer. Always confirm through the company's own website or a phone number you find yourself.
+              It is not a trained model or a background check. It runs transparent, weighted rules and the public domain checks that are available, plus an opt-in Google Web Risk lookup of links if you ask for one, and it tells you which checks it could not run. A low score alone does not verify an offer. Always confirm through the company's own website or a phone number you find yourself.
             </p>
           </div>
         </div>

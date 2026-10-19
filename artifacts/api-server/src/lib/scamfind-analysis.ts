@@ -6,6 +6,7 @@ import { getDomain } from "tldts";
 import { digest } from "./scamfind-crypto";
 import { ENGINE_VERSION, rules } from "./scamfind-rules";
 import { enrichDomain, validDomain } from "./scamfind-enrichment";
+import { checkOfferLinks } from "./scamfind-webrisk";
 
 export type Scan = ReturnType<typeof GetScanResponse.parse>;
 type Input = ReturnType<typeof CreateScanBody.parse>;
@@ -72,11 +73,24 @@ export async function analyse(input: Input): Promise<Scan> {
   if (domain.includes("xn--")) addDomain("punycode", domain);
   if (/(?:career|hiring|recruit|hr-|job-)/i.test(domain)) addDomain("domain-bait", domain);
   const intel = await enrichDomain(domain);
+  const links = Array.from(new Set(content.match(/https?:\/\/[^\s<>"')\]]+/gi) ?? [])).slice(0, 100);
+  const urlChecks = await checkOfferLinks(links, !!input.checkLinks);
+  const listed = urlChecks.filter(check => check.status === "listed");
+  if (listed.length) signals.push({
+    id: "webrisk-listed", title: "A link is listed by Google Web Risk", category: "Link reputation", weight: 80,
+    evidence: listed.map(check => `${check.url}: ${check.threatTypes.join(", ")}`).join("\n"),
+    description: "A normalized URL matched a current malware, social engineering or unwanted software list. This is external threat-list evidence, not a probability or proof about the entire job offer.",
+  });
   const checks: Scan["checks"] = [
     { name: "Weighted text analysis", status: signals.length ? "warning" : "passed", detail: `${rules.length} rules evaluated. ${signals.length} warning signals found. This is not a trained or benchmark-calibrated model.` },
     { name: "Sender mail records", status: intel.mx === "found" ? "passed" : intel.mx === "missing" ? "warning" : "unavailable", detail: intel.mxDetail },
     { name: "Domain registration age", status: intel.ageDays === undefined ? "unavailable" : intel.ageDays < 180 ? "warning" : "info", detail: intel.rdapDetail },
-    { name: "URL reputation", status: "unavailable", detail: "VirusTotal and Safe Browsing are not connected. No offer links were fetched or declared safe." },
+    {
+      name: "URL reputation", status: listed.length ? "warning" : urlChecks.some(check => check.status === "not_listed") ? "info" : "unavailable",
+      detail: !input.checkLinks ? "Not requested. Link lookups require your explicit opt-in; no offer links were visited."
+        : !links.length ? "No HTTP(S) URLs were extracted. No Web Risk lookup was performed."
+        : `${urlChecks.filter(check => ["listed", "not_listed"].includes(check.status)).length} URL(s) checked against Google Web Risk; ${listed.length} listed. At most 5 normalized public URLs are queried, without query strings/fragments. Unavailable or skipped results are not clean results. No links were visited and no-match does not establish safety.`,
+    },
     { name: "Mailbox ownership and company identity", status: "unavailable", detail: "Email verification, company-domain matching and company registry services are not connected." },
     { name: "IP reputation and text reuse", status: "unavailable", detail: "AbuseIPDB and exact-phrase search are not connected." },
     { name: "Attachment malware check", status: "unavailable", detail: attachmentNames.length ? `${attachmentNames.length} attachment(s) identified: ${attachmentNames.join(", ")}. Not executed or malware-scanned; bytes are not retained.` : "No malware-scanning service is connected. Text-only screening does not establish attachment safety." },
@@ -91,9 +105,10 @@ export async function analyse(input: Input): Promise<Scan> {
   let score = Math.round(hasEnrichment ? (0.45 * ruleScore + 0.35 * Math.min(100, enrichmentScore / 60 * 100)) / 0.8 : ruleScore);
   if (signals.some(s => s.category === "Money requests")) score = Math.max(60, score);
   if (freeMail.has(registrable)) score = Math.max(40, score);
+  if (listed.length) score = Math.max(80, score);
   score = Math.min(100, Math.max(0, score));
   let verdict: Scan["verdict"] = score >= 55 ? "Likely scam" : score >= 25 ? "Suspicious" : "Likely genuine";
-  if ((text.length < 100 && !validDomain(domain)) || (score < 25 && intel.mx !== "found" && intel.ageDays === undefined)) verdict = "Insufficient data";
+  if (!listed.length && ((text.length < 100 && !validDomain(domain)) || (score < 25 && intel.mx !== "found" && intel.ageDays === undefined))) verdict = "Insufficient data";
   const now = new Date().toISOString();
   const status = verdict === "Likely genuine" ? "closed" : "new";
   const checklist = [
@@ -103,13 +118,12 @@ export async function analyse(input: Input): Promise<Scan> {
     ...(domain ? [`Verify that ${domain} is an authorized recruiting domain; mail records alone do not establish this.`] : ["Add the original sender email address or upload the complete .eml file for sender-domain checks."]),
     ...(verdict === "Likely scam" ? ["Do not reply. Preserve the original message and contact your bank immediately if money or banking data was shared.", "If you lost money in India, call 1930 immediately and report at cybercrime.gov.in."] : []),
   ];
-  const links = Array.from(new Set(content.match(/https?:\/\/[^\s<>"')\]]+/gi) ?? [])).slice(0, 100);
   return GetScanResponse.parse({
     id: randomUUID(), title: input.title?.trim() || subject || input.fileName || "Job offer screening",
     text, sender, domain, source: input.source ?? "paste", createdAt: now, score, verdict,
-    confidence: "Reduced confidence — rules and available public domain checks only. Commercial reputation, identity verification and ML checks have not run. Risk is an indicator, not a probability or guarantee.",
+    confidence: `Reduced confidence — rules, available public domain checks${urlChecks.some(check => ["listed", "not_listed"].includes(check.status)) ? " and opt-in Google Web Risk lookups" : ""} only. Identity verification, attachment malware analysis and ML checks have not run. Risk is an indicator, not a probability or guarantee.`,
     status, notes: "", feedback: "", dueAt: new Date(Date.now() + (verdict === "Likely scam" ? 4 : verdict === "Insufficient data" ? 72 : 24) * 3600000).toISOString(),
-    signals, checks, checklist, links, headers,
+    signals, checks, checklist, links, headers, urlChecks, linkCheckRequested: !!input.checkLinks,
     hash: digest(input.text), engineVersion: ENGINE_VERSION, durationMs: Date.now() - started,
     timeline: [{ at: now, description: "Source text received; SHA-256 recorded. Uploaded text is hashed as submitted UTF-8, not as a byte-for-byte forensic file." }, { at: new Date().toISOString(), description: `Screened with ${ENGINE_VERSION}; verdict: ${verdict}. Unavailable providers recorded.` }],
   });

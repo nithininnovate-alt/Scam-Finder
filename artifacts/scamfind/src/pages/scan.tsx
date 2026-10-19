@@ -27,6 +27,7 @@ import { useToast } from '@/hooks/use-toast';
 import { ErrorPanel, RiskDial, StatusPill, VerdictBadge } from '@/components/scan-bits';
 import { download, errorMessage, shortDate, statusLabel, utc, verdictPlain } from '@/lib/scan-utils';
 import { cn } from '@/lib/utils';
+import { PdfSourceNote, UrlChecksPanel, defang } from '@/components/report-extras';
 
 const CHECK_ICON = {
   passed: { icon: CheckCircle2, cls: 'text-safe', label: 'Passed' },
@@ -37,7 +38,7 @@ const CHECK_ICON = {
 
 function Section({ n, title, children, className }: { n: string; title: string; children: ReactNode; className?: string }) {
   return (
-    <section className={cn('rounded-2xl border bg-card p-5 sm:p-6 rise', className)}>
+    <section className={cn('min-w-0 rounded-2xl border bg-card p-5 sm:p-6 rise [overflow-wrap:anywhere]', className)}>
       <h2 className="mb-4 flex items-baseline gap-3 text-xl font-semibold">
         <span className="font-mono text-xs text-muted-foreground">{n}</span>
         {title}
@@ -229,8 +230,8 @@ export function ReportBody({ scan, caseSlot, caseTitle = 'Case notes' }: { scan:
       {/* Hero */}
       <section className="relative overflow-hidden rounded-3xl border bg-card p-6 sm:p-8 rise">
         <div className="ledger pointer-events-none absolute inset-0 opacity-30" />
-        <div className="relative grid items-center gap-8 md:grid-cols-[1fr_250px]">
-          <div>
+        <div className="relative grid grid-cols-1 items-center gap-8 md:grid-cols-[minmax(0,1fr)_250px]">
+          <div className="min-w-0 [overflow-wrap:anywhere]">
             <div className="mb-3 flex flex-wrap items-center gap-2">
               <VerdictBadge verdict={scan.verdict} className="text-sm" />
               <StatusPill status={scan.status} />
@@ -247,14 +248,15 @@ export function ReportBody({ scan, caseSlot, caseTitle = 'Case notes' }: { scan:
         </div>
         <div className="relative mt-6 rounded-xl bg-secondary/70 p-4 text-sm leading-relaxed">
           <strong className="font-medium">How to read this. </strong>
-          The score is a risk indicator from 0 to 100 built from weighted rules and available public domain checks — not a probability. Money-demand signals set a minimum of 60, and a free mailbox sender sets a minimum of 40. Attachment-hash reputation is not connected and does not affect this score.
+          The score is a risk indicator from 0 to 100 built from weighted rules and available public domain checks — not a probability. Money-demand signals set a minimum of 60, and a free mailbox sender sets a minimum of 40. Attachment-hash reputation is not connected and does not affect this score.{scan.linkCheckRequested ? ' You opted in to a Google Web Risk link lookup; results are listed with the links below.' : ''}
           {unavailable.length > 0 && <> Confidence is reduced because {unavailable.length} check{unavailable.length > 1 ? 's were' : ' was'} unavailable: {unavailable.map((c) => c.name).join(', ')}.</>}
-          {' '}No paid reputation providers or machine-learning models are connected. A low score alone does not verify that an offer is legitimate.
+          {' '}No machine-learning models are used. A low score alone does not verify that an offer is legitimate.
           <p className="mt-2 text-xs text-muted-foreground">{scan.confidence}</p>
         </div>
+        <PdfSourceNote scan={scan} />
       </section>
 
-      <div className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
         <Section n="01" title={`Evidence found (${scan.signals.length})`}>
           {scan.signals.length === 0 ? (
             <p className="text-sm text-muted-foreground">No warning patterns matched. That is reassuring but not proof — verify the company and recruiter independently before sharing documents.</p>
@@ -313,7 +315,7 @@ export function ReportBody({ scan, caseSlot, caseTitle = 'Case notes' }: { scan:
         </div>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <Section n="04" title={caseTitle}>
           {caseSlot}
         </Section>
@@ -340,21 +342,25 @@ export function ReportBody({ scan, caseSlot, caseTitle = 'Case notes' }: { scan:
         </Section>
       </div>
 
-      {scan.links.length > 0 && (
+      {(scan.links.length > 0 || (scan.urlChecks?.length ?? 0) > 0 || scan.linkCheckRequested) && (
         <Section n="06" title="Links found in the message">
-          <p className="mb-3 flex items-center gap-2 text-xs text-muted-foreground"><Link2Off className="h-3.5 w-3.5" /> Shown as plain text and never opened or fetched. Do not visit them to check.</p>
+          <p className="mb-3 flex items-center gap-2 text-xs text-muted-foreground"><Link2Off className="h-3.5 w-3.5" /> Shown as plain text and never opened or fetched by ScamFind. Do not visit them to check.</p>
           <ul className="space-y-1.5">
             {scan.links.map((l, i) => (
               <li key={i} className="flex items-center justify-between gap-2 rounded-md bg-muted px-3 py-1.5" data-testid={`text-link-${i}`}>
-                <code className="break-all font-mono text-xs">{l.replace(/^http/i, 'hxxp').replace(/\./g, '[.]')}</code>
+                <code className="break-all font-mono text-xs">{defang(l)}</code>
                 <CopyBtn value={l} label={`link-${i}`} />
               </li>
             ))}
           </ul>
+          {(scan.linkCheckRequested !== undefined || (scan.urlChecks?.length ?? 0) > 0) && <div className="mt-5 border-t pt-4">
+            <h3 className="mb-2 font-sans text-sm font-semibold">Link reputation lookup</h3>
+            <UrlChecksPanel scan={scan} />
+          </div>}
         </Section>
       )}
 
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <Section n="07" title="Readable offer content">
           <pre className="max-h-96 overflow-auto whitespace-pre-wrap break-words rounded-lg bg-muted p-4 font-mono text-xs leading-relaxed" data-testid="text-original">{scan.text}</pre>
           {scan.headers && (
@@ -366,13 +372,13 @@ export function ReportBody({ scan, caseSlot, caseTitle = 'Case notes' }: { scan:
         </Section>
 
         <Section n="08" title="Audit trail">
-          <p className="mb-4 text-xs text-muted-foreground">The hash covers the submitted UTF-8 source text, not original uploaded file bytes. Preserve your original email separately. This is a screening record, not a certified forensic chain of custody.</p>
+          <p className="mb-4 text-xs text-muted-foreground">The hash covers the submitted UTF-8 source text{scan.pdfSource ? ' (for PDFs, the extracted text)' : ''}, not original uploaded file bytes. Preserve your original email separately. This is a screening record, not a certified forensic chain of custody.</p>
           <dl className="mb-5 space-y-2 text-xs">
-            <div className="flex items-start justify-between gap-2"><dt className="text-muted-foreground">SHA-256</dt><dd className="flex items-center gap-1"><code className="break-all text-right font-mono" data-testid="text-hash">{scan.hash}</code><CopyBtn value={scan.hash} label="hash" /></dd></div>
+            <div className="flex items-start justify-between gap-2"><dt className="shrink-0 text-muted-foreground">SHA-256</dt><dd className="flex min-w-0 items-start gap-1"><code className="min-w-0 break-all text-right font-mono" data-testid="text-hash">{scan.hash}</code><CopyBtn value={scan.hash} label="hash" /></dd></div>
             <div className="flex justify-between"><dt className="text-muted-foreground">Engine</dt><dd className="font-mono">{scan.engineVersion}</dd></div>
             <div className="flex justify-between"><dt className="text-muted-foreground">Analysis time</dt><dd className="font-mono">{scan.durationMs} ms</dd></div>
             <div className="flex justify-between"><dt className="text-muted-foreground">Source</dt><dd className="font-mono">{scan.source}</dd></div>
-            <div className="flex justify-between"><dt className="text-muted-foreground">Report ID</dt><dd className="font-mono">{scan.id}</dd></div>
+            <div className="flex justify-between gap-3"><dt className="shrink-0 text-muted-foreground">Report ID</dt><dd className="min-w-0 break-all text-right font-mono">{scan.id}</dd></div>
           </dl>
           <ol className="relative space-y-4 border-l pl-5">
             {scan.timeline.map((t, i) => (

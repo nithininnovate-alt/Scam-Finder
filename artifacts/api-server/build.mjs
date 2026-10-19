@@ -31,6 +31,7 @@ async function buildAll() {
       "@clerk/express",
       "@clerk/shared",
       "@clerk/shared/*",
+      "@replit/connectors-sdk",
       "mailparser",
       "html-to-text",
       "pdfkit",
@@ -123,6 +124,11 @@ globalThis.__filename = __bannerUrl.fileURLToPath(import.meta.url);
 globalThis.__dirname = __bannerPath.dirname(globalThis.__filename);
     `,
     },
+  });
+  await esbuild({
+    entryPoints: { "pdf-worker": path.resolve(artifactDir, "src/lib/scamfind-pdf-worker.ts") },
+    platform: "node", bundle: true, format: "esm", outdir: distDir,
+    outExtension: { ".js": ".mjs" }, external: ["unpdf"], logLevel: "info",
   });
 }
 

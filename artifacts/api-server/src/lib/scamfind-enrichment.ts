@@ -51,14 +51,13 @@ export async function enrichDomain(domain: string): Promise<DomainIntel> {
   return value;
 }
 
-export const providers = [
+const providers = [
   { name: "ScamFind rules", capability: "Weighted text signals", status: "active", description: "42 versioned signals across 9 risk categories. Not benchmark-calibrated." },
   { name: "Public DNS", capability: "Sender-domain mail records", status: "active", description: "Live MX lookup; unavailable results are disclosed. Does not verify mailbox ownership." },
   { name: "Public RDAP", capability: "Domain registration age", status: "active", description: "Registration data queried through rdap.org with a 5-second timeout; registry coverage varies." },
   ...[
     ["WHOISXML", "Commercial WHOIS"],
     ["VirusTotal", "URL and attachment-hash reputation"],
-    ["Google Safe Browsing", "Malicious-link reputation"],
     ["AbuseIPDB", "Received-IP reputation"],
     ["ZeroBounce", "Mailbox verification"],
     ["Hunter", "Company-domain matching"],
@@ -70,3 +69,14 @@ export const providers = [
     ["ML classifier", "Trained scam classification"],
   ].map(([name, capability]) => ({ name: name!, capability: capability!, status: "not_connected", description: "Not connected. This check does not contribute to verdicts." })),
 ];
+
+export async function getProviders() {
+  const [{ webRiskHealth }, { emailAvailability }] = await Promise.all([import("./scamfind-webrisk"), import("./scamfind-email")]);
+  const risk = webRiskHealth();
+  const mail = await emailAvailability();
+  return [
+    ...providers,
+    { name: "Google Web Risk", capability: "Opt-in malicious-link reputation", status: risk.status, description: `${risk.message} Up to 5 public URLs per scan; query strings and fragments are removed. Not-listed is not proof of safety.` },
+    { name: "Resend", capability: "Opt-in case update emails", status: mail.status, description: mail.message },
+  ];
+}

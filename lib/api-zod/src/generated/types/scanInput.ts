@@ -19,5 +19,6 @@ export interface ScanInput {
   title?: string;
   /** @maxLength 255 */
   fileName?: string;
+  checkLinks?: boolean;
   source?: ScanInputSource;
 }

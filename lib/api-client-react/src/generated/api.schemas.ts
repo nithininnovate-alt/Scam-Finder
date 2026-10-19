@@ -5,6 +5,123 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+export interface NotificationPreferencesInput {
+  enabled: boolean;
+}
+
+export type PdfScanInputCheckLinks = typeof PdfScanInputCheckLinks[keyof typeof PdfScanInputCheckLinks];
+
+
+export const PdfScanInputCheckLinks = {
+  true: 'true',
+  false: 'false',
+} as const;
+
+export interface PdfScanInput {
+  file: Blob;
+  /** @maxLength 320 */
+  sender?: string;
+  /** @maxLength 160 */
+  title?: string;
+  checkLinks?: PdfScanInputCheckLinks;
+}
+
+export interface NotificationPreferences {
+  enabled: boolean;
+  email: string;
+  ready: boolean;
+  message: string;
+}
+
+export interface IntegrationSettingsInput {
+  /** @maxLength 320 */
+  senderEmail: string;
+  /**
+     * @minLength 1
+     * @maxLength 80
+     */
+  senderName: string;
+  emailEnabled: boolean;
+}
+
+export type IntegrationSettingsEmailStatus = typeof IntegrationSettingsEmailStatus[keyof typeof IntegrationSettingsEmailStatus];
+
+
+export const IntegrationSettingsEmailStatus = {
+  active: 'active',
+  configured: 'configured',
+  not_connected: 'not_connected',
+  error: 'error',
+} as const;
+
+export type IntegrationSettingsWebRiskStatus = typeof IntegrationSettingsWebRiskStatus[keyof typeof IntegrationSettingsWebRiskStatus];
+
+
+export const IntegrationSettingsWebRiskStatus = {
+  active: 'active',
+  configured: 'configured',
+  not_connected: 'not_connected',
+  error: 'error',
+} as const;
+
+export type EmailDeliveryType = typeof EmailDeliveryType[keyof typeof EmailDeliveryType];
+
+
+export const EmailDeliveryType = {
+  test: 'test',
+  case_update: 'case_update',
+} as const;
+
+export type EmailDeliveryStatus = typeof EmailDeliveryStatus[keyof typeof EmailDeliveryStatus];
+
+
+export const EmailDeliveryStatus = {
+  queued: 'queued',
+  sending: 'sending',
+  sent: 'sent',
+  failed: 'failed',
+  cancelled: 'cancelled',
+} as const;
+
+export interface EmailDelivery {
+  id: string;
+  type: EmailDeliveryType;
+  status: EmailDeliveryStatus;
+  createdAt: string;
+  attempts: number;
+  recipient: string;
+  error: string;
+}
+
+export interface IntegrationSettings {
+  senderEmail: string;
+  senderName: string;
+  emailEnabled: boolean;
+  emailStatus: IntegrationSettingsEmailStatus;
+  emailMessage: string;
+  webRiskStatus: IntegrationSettingsWebRiskStatus;
+  webRiskMessage: string;
+  deliveries: EmailDelivery[];
+}
+
+export type UrlCheckStatus = typeof UrlCheckStatus[keyof typeof UrlCheckStatus];
+
+
+export const UrlCheckStatus = {
+  listed: 'listed',
+  not_listed: 'not_listed',
+  unavailable: 'unavailable',
+  skipped: 'skipped',
+} as const;
+
+export interface UrlCheck {
+  url: string;
+  status: UrlCheckStatus;
+  threatTypes: string[];
+  detail: string;
+  checkedAt: string;
+}
+
 export type AccountRole = typeof AccountRole[keyof typeof AccountRole];
 
 
@@ -75,6 +192,12 @@ export interface TimelineEvent {
   description: string;
 }
 
+export type ScanPdfSource = {
+  fileName: string;
+  pages: number;
+  warning: string;
+};
+
 export interface Scan {
   id: string;
   title: string;
@@ -99,6 +222,9 @@ export interface Scan {
   engineVersion: string;
   durationMs: number;
   timeline: TimelineEvent[];
+  linkCheckRequested?: boolean;
+  urlChecks?: UrlCheck[];
+  pdfSource?: ScanPdfSource;
 }
 
 export interface AdminCase {
@@ -139,6 +265,7 @@ export interface ScanInput {
   title?: string;
   /** @maxLength 255 */
   fileName?: string;
+  checkLinks?: boolean;
   source?: ScanInputSource;
 }
 
@@ -181,7 +308,9 @@ export type ProviderStatus = typeof ProviderStatus[keyof typeof ProviderStatus];
 
 export const ProviderStatus = {
   active: 'active',
+  configured: 'configured',
   not_connected: 'not_connected',
+  error: 'error',
 } as const;
 
 export interface Provider {

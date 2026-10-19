@@ -1,6 +1,8 @@
 import app from "./app";
 import { logger } from "./lib/logger";
 import { purgeExpiredScans } from "./lib/scamfind-store";
+import { processEmailQueue } from "./lib/scamfind-email";
+import { probeWebRisk } from "./lib/scamfind-webrisk";
 
 const rawPort = process.env["PORT"];
 
@@ -26,4 +28,10 @@ app.listen(port, (err) => {
   const purge = () => purgeExpiredScans().catch(() => logger.error("Unable to purge expired cases"));
   void purge();
   setInterval(purge, 3600000).unref();
+  const emailQueue = () => processEmailQueue().catch(() => logger.error("Unable to process email notification queue"));
+  void emailQueue();
+  setInterval(emailQueue, 20000).unref();
+  // Probe only a fixed public example, never offer data. Actual offer lookups
+  // remain opt-in and an unavailable provider never produces a clean result.
+  void probeWebRisk().catch(() => logger.error("Web Risk health check could not be completed"));
 });

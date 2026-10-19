@@ -8,6 +8,176 @@
 import * as zod from 'zod';
 
 
+export const GetNotificationPreferencesResponse = zod.object({
+  "enabled": zod.boolean(),
+  "email": zod.string(),
+  "ready": zod.boolean(),
+  "message": zod.string()
+})
+
+
+export const UpdateNotificationPreferencesBody = zod.object({
+  "enabled": zod.boolean()
+})
+
+export const UpdateNotificationPreferencesResponse = zod.object({
+  "enabled": zod.boolean(),
+  "email": zod.string(),
+  "ready": zod.boolean(),
+  "message": zod.string()
+})
+
+
+export const GetIntegrationSettingsResponse = zod.object({
+  "senderEmail": zod.string(),
+  "senderName": zod.string(),
+  "emailEnabled": zod.boolean(),
+  "emailStatus": zod.enum(['active', 'configured', 'not_connected', 'error']),
+  "emailMessage": zod.string(),
+  "webRiskStatus": zod.enum(['active', 'configured', 'not_connected', 'error']),
+  "webRiskMessage": zod.string(),
+  "deliveries": zod.array(zod.object({
+  "id": zod.string(),
+  "type": zod.enum(['test', 'case_update']),
+  "status": zod.enum(['queued', 'sending', 'sent', 'failed', 'cancelled']),
+  "createdAt": zod.string(),
+  "attempts": zod.number().int(),
+  "recipient": zod.string(),
+  "error": zod.string()
+}))
+})
+
+
+export const updateIntegrationSettingsBodySenderEmailMax = 320;
+
+export const updateIntegrationSettingsBodySenderNameMax = 80;
+
+
+
+export const UpdateIntegrationSettingsBody = zod.object({
+  "senderEmail": zod.string().max(updateIntegrationSettingsBodySenderEmailMax),
+  "senderName": zod.string().min(1).max(updateIntegrationSettingsBodySenderNameMax),
+  "emailEnabled": zod.boolean()
+})
+
+export const UpdateIntegrationSettingsResponse = zod.object({
+  "senderEmail": zod.string(),
+  "senderName": zod.string(),
+  "emailEnabled": zod.boolean(),
+  "emailStatus": zod.enum(['active', 'configured', 'not_connected', 'error']),
+  "emailMessage": zod.string(),
+  "webRiskStatus": zod.enum(['active', 'configured', 'not_connected', 'error']),
+  "webRiskMessage": zod.string(),
+  "deliveries": zod.array(zod.object({
+  "id": zod.string(),
+  "type": zod.enum(['test', 'case_update']),
+  "status": zod.enum(['queued', 'sending', 'sent', 'failed', 'cancelled']),
+  "createdAt": zod.string(),
+  "attempts": zod.number().int(),
+  "recipient": zod.string(),
+  "error": zod.string()
+}))
+})
+
+
+export const RefreshIntegrationStatusResponse = zod.object({
+  "senderEmail": zod.string(),
+  "senderName": zod.string(),
+  "emailEnabled": zod.boolean(),
+  "emailStatus": zod.enum(['active', 'configured', 'not_connected', 'error']),
+  "emailMessage": zod.string(),
+  "webRiskStatus": zod.enum(['active', 'configured', 'not_connected', 'error']),
+  "webRiskMessage": zod.string(),
+  "deliveries": zod.array(zod.object({
+  "id": zod.string(),
+  "type": zod.enum(['test', 'case_update']),
+  "status": zod.enum(['queued', 'sending', 'sent', 'failed', 'cancelled']),
+  "createdAt": zod.string(),
+  "attempts": zod.number().int(),
+  "recipient": zod.string(),
+  "error": zod.string()
+}))
+})
+
+
+export const SendTestEmailResponse = zod.object({
+  "id": zod.string(),
+  "type": zod.enum(['test', 'case_update']),
+  "status": zod.enum(['queued', 'sending', 'sent', 'failed', 'cancelled']),
+  "createdAt": zod.string(),
+  "attempts": zod.number().int(),
+  "recipient": zod.string(),
+  "error": zod.string()
+})
+
+
+export const uploadPdfScanBodySenderMax = 320;
+
+export const uploadPdfScanBodyTitleMax = 160;
+
+
+
+export const UploadPdfScanBody = zod.object({
+  "file": zod.instanceof(Blob),
+  "sender": zod.string().max(uploadPdfScanBodySenderMax).optional(),
+  "title": zod.string().max(uploadPdfScanBodyTitleMax).optional(),
+  "checkLinks": zod.enum(['true', 'false']).optional()
+})
+
+export const UploadPdfScanResponse = zod.object({
+  "id": zod.string(),
+  "title": zod.string(),
+  "text": zod.string(),
+  "sender": zod.string(),
+  "domain": zod.string(),
+  "source": zod.string(),
+  "createdAt": zod.string(),
+  "score": zod.number().int(),
+  "verdict": zod.enum(['Likely genuine', 'Suspicious', 'Likely scam', 'Insufficient data']),
+  "confidence": zod.string(),
+  "status": zod.enum(['new', 'triaged', 'escalated', 'closed']),
+  "notes": zod.string(),
+  "feedback": zod.string(),
+  "dueAt": zod.string(),
+  "signals": zod.array(zod.object({
+  "id": zod.string(),
+  "title": zod.string(),
+  "category": zod.string(),
+  "weight": zod.number().int(),
+  "evidence": zod.string(),
+  "description": zod.string()
+})),
+  "checks": zod.array(zod.object({
+  "name": zod.string(),
+  "status": zod.enum(['passed', 'warning', 'unavailable', 'info']),
+  "detail": zod.string()
+})),
+  "checklist": zod.array(zod.string()),
+  "links": zod.array(zod.string()),
+  "headers": zod.string(),
+  "hash": zod.string(),
+  "engineVersion": zod.string(),
+  "durationMs": zod.number().int(),
+  "timeline": zod.array(zod.object({
+  "at": zod.string(),
+  "description": zod.string()
+})),
+  "linkCheckRequested": zod.boolean().optional(),
+  "urlChecks": zod.array(zod.object({
+  "url": zod.string(),
+  "status": zod.enum(['listed', 'not_listed', 'unavailable', 'skipped']),
+  "threatTypes": zod.array(zod.string()),
+  "detail": zod.string(),
+  "checkedAt": zod.string()
+})).optional(),
+  "pdfSource": zod.object({
+  "fileName": zod.string(),
+  "pages": zod.number().int(),
+  "warning": zod.string()
+}).optional()
+})
+
+
 export const GetAccountResponse = zod.object({
   "id": zod.string(),
   "email": zod.string(),
@@ -75,7 +245,20 @@ export const GetAdminSummaryResponse = zod.object({
   "timeline": zod.array(zod.object({
   "at": zod.string(),
   "description": zod.string()
-}))
+})),
+  "linkCheckRequested": zod.boolean().optional(),
+  "urlChecks": zod.array(zod.object({
+  "url": zod.string(),
+  "status": zod.enum(['listed', 'not_listed', 'unavailable', 'skipped']),
+  "threatTypes": zod.array(zod.string()),
+  "detail": zod.string(),
+  "checkedAt": zod.string()
+})).optional(),
+  "pdfSource": zod.object({
+  "fileName": zod.string(),
+  "pages": zod.number().int(),
+  "warning": zod.string()
+}).optional()
 })
 }))
 })
@@ -132,7 +315,20 @@ export const ListAdminScansResponseItem = zod.object({
   "timeline": zod.array(zod.object({
   "at": zod.string(),
   "description": zod.string()
-}))
+})),
+  "linkCheckRequested": zod.boolean().optional(),
+  "urlChecks": zod.array(zod.object({
+  "url": zod.string(),
+  "status": zod.enum(['listed', 'not_listed', 'unavailable', 'skipped']),
+  "threatTypes": zod.array(zod.string()),
+  "detail": zod.string(),
+  "checkedAt": zod.string()
+})).optional(),
+  "pdfSource": zod.object({
+  "fileName": zod.string(),
+  "pages": zod.number().int(),
+  "warning": zod.string()
+}).optional()
 })
 })
 export const ListAdminScansResponse = zod.array(ListAdminScansResponseItem)
@@ -179,7 +375,20 @@ export const GetAdminScanResponse = zod.object({
   "timeline": zod.array(zod.object({
   "at": zod.string(),
   "description": zod.string()
-}))
+})),
+  "linkCheckRequested": zod.boolean().optional(),
+  "urlChecks": zod.array(zod.object({
+  "url": zod.string(),
+  "status": zod.enum(['listed', 'not_listed', 'unavailable', 'skipped']),
+  "threatTypes": zod.array(zod.string()),
+  "detail": zod.string(),
+  "checkedAt": zod.string()
+})).optional(),
+  "pdfSource": zod.object({
+  "fileName": zod.string(),
+  "pages": zod.number().int(),
+  "warning": zod.string()
+}).optional()
 })
 
 
@@ -234,7 +443,20 @@ export const UpdateAdminScanResponse = zod.object({
   "timeline": zod.array(zod.object({
   "at": zod.string(),
   "description": zod.string()
-}))
+})),
+  "linkCheckRequested": zod.boolean().optional(),
+  "urlChecks": zod.array(zod.object({
+  "url": zod.string(),
+  "status": zod.enum(['listed', 'not_listed', 'unavailable', 'skipped']),
+  "threatTypes": zod.array(zod.string()),
+  "detail": zod.string(),
+  "checkedAt": zod.string()
+})).optional(),
+  "pdfSource": zod.object({
+  "fileName": zod.string(),
+  "pages": zod.number().int(),
+  "warning": zod.string()
+}).optional()
 })
 
 
@@ -282,7 +504,20 @@ export const ListScansResponseItem = zod.object({
   "timeline": zod.array(zod.object({
   "at": zod.string(),
   "description": zod.string()
-}))
+})),
+  "linkCheckRequested": zod.boolean().optional(),
+  "urlChecks": zod.array(zod.object({
+  "url": zod.string(),
+  "status": zod.enum(['listed', 'not_listed', 'unavailable', 'skipped']),
+  "threatTypes": zod.array(zod.string()),
+  "detail": zod.string(),
+  "checkedAt": zod.string()
+})).optional(),
+  "pdfSource": zod.object({
+  "fileName": zod.string(),
+  "pages": zod.number().int(),
+  "warning": zod.string()
+}).optional()
 })
 export const ListScansResponse = zod.array(ListScansResponseItem)
 
@@ -295,6 +530,7 @@ export const createScanBodyTitleMax = 160;
 
 export const createScanBodyFileNameMax = 255;
 
+export const createScanBodyCheckLinksDefault = false;
 export const createScanBodySourceDefault = `paste`;
 
 export const CreateScanBody = zod.object({
@@ -302,6 +538,7 @@ export const CreateScanBody = zod.object({
   "sender": zod.string().max(createScanBodySenderMax).optional(),
   "title": zod.string().max(createScanBodyTitleMax).optional(),
   "fileName": zod.string().max(createScanBodyFileNameMax).optional(),
+  "checkLinks": zod.boolean().default(createScanBodyCheckLinksDefault),
   "source": zod.enum(['paste', 'upload', 'batch']).default(createScanBodySourceDefault)
 })
 
@@ -342,7 +579,20 @@ export const CreateScanResponse = zod.object({
   "timeline": zod.array(zod.object({
   "at": zod.string(),
   "description": zod.string()
-}))
+})),
+  "linkCheckRequested": zod.boolean().optional(),
+  "urlChecks": zod.array(zod.object({
+  "url": zod.string(),
+  "status": zod.enum(['listed', 'not_listed', 'unavailable', 'skipped']),
+  "threatTypes": zod.array(zod.string()),
+  "detail": zod.string(),
+  "checkedAt": zod.string()
+})).optional(),
+  "pdfSource": zod.object({
+  "fileName": zod.string(),
+  "pages": zod.number().int(),
+  "warning": zod.string()
+}).optional()
 })
 
 
@@ -387,7 +637,20 @@ export const GetScanResponse = zod.object({
   "timeline": zod.array(zod.object({
   "at": zod.string(),
   "description": zod.string()
-}))
+})),
+  "linkCheckRequested": zod.boolean().optional(),
+  "urlChecks": zod.array(zod.object({
+  "url": zod.string(),
+  "status": zod.enum(['listed', 'not_listed', 'unavailable', 'skipped']),
+  "threatTypes": zod.array(zod.string()),
+  "detail": zod.string(),
+  "checkedAt": zod.string()
+})).optional(),
+  "pdfSource": zod.object({
+  "fileName": zod.string(),
+  "pages": zod.number().int(),
+  "warning": zod.string()
+}).optional()
 })
 
 
@@ -442,7 +705,20 @@ export const UpdateScanResponse = zod.object({
   "timeline": zod.array(zod.object({
   "at": zod.string(),
   "description": zod.string()
-}))
+})),
+  "linkCheckRequested": zod.boolean().optional(),
+  "urlChecks": zod.array(zod.object({
+  "url": zod.string(),
+  "status": zod.enum(['listed', 'not_listed', 'unavailable', 'skipped']),
+  "threatTypes": zod.array(zod.string()),
+  "detail": zod.string(),
+  "checkedAt": zod.string()
+})).optional(),
+  "pdfSource": zod.object({
+  "fileName": zod.string(),
+  "pages": zod.number().int(),
+  "warning": zod.string()
+}).optional()
 })
 
 
@@ -503,7 +779,20 @@ export const GetSummaryResponse = zod.object({
   "timeline": zod.array(zod.object({
   "at": zod.string(),
   "description": zod.string()
-}))
+})),
+  "linkCheckRequested": zod.boolean().optional(),
+  "urlChecks": zod.array(zod.object({
+  "url": zod.string(),
+  "status": zod.enum(['listed', 'not_listed', 'unavailable', 'skipped']),
+  "threatTypes": zod.array(zod.string()),
+  "detail": zod.string(),
+  "checkedAt": zod.string()
+})).optional(),
+  "pdfSource": zod.object({
+  "fileName": zod.string(),
+  "pages": zod.number().int(),
+  "warning": zod.string()
+}).optional()
 }))
 })
 
@@ -511,7 +800,7 @@ export const GetSummaryResponse = zod.object({
 export const ListProvidersResponseItem = zod.object({
   "name": zod.string(),
   "capability": zod.string(),
-  "status": zod.enum(['active', 'not_connected']),
+  "status": zod.enum(['active', 'configured', 'not_connected', 'error']),
   "description": zod.string()
 })
 export const ListProvidersResponse = zod.array(ListProvidersResponseItem)

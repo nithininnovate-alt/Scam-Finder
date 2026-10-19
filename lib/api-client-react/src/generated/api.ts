@@ -24,7 +24,13 @@ import type {
   AdminCase,
   AdminSummary,
   CountResult,
+  EmailDelivery,
   HealthStatus,
+  IntegrationSettings,
+  IntegrationSettingsInput,
+  NotificationPreferences,
+  NotificationPreferencesInput,
+  PdfScanInput,
   Provider,
   Scan,
   ScanInput,
@@ -58,6 +64,527 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
   }
   return result;
 };
+
+export const getGetNotificationPreferencesUrl = () => {
+
+
+
+
+  return `/api/account/notifications`
+}
+
+export const getNotificationPreferences = async ( options?: Parameters<typeof customFetch>[1]): Promise<NotificationPreferences> => {
+
+  return customFetch<NotificationPreferences>(getGetNotificationPreferencesUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetNotificationPreferencesQueryKey = () => {
+    return [
+    `/api/account/notifications`
+    ] as const;
+    }
+
+
+export const getGetNotificationPreferencesQueryOptions = <TData = Awaited<ReturnType<typeof getNotificationPreferences>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getNotificationPreferences>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetNotificationPreferencesQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getNotificationPreferences>>> = ({ signal }) => getNotificationPreferences({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getNotificationPreferences>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetNotificationPreferencesQueryResult = NonNullable<Awaited<ReturnType<typeof getNotificationPreferences>>>
+export type GetNotificationPreferencesQueryError = ErrorType<unknown>
+
+
+
+export function useGetNotificationPreferences<TData = Awaited<ReturnType<typeof getNotificationPreferences>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getNotificationPreferences>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetNotificationPreferencesQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getUpdateNotificationPreferencesUrl = () => {
+
+
+
+
+  return `/api/account/notifications`
+}
+
+export const updateNotificationPreferences = async (notificationPreferencesInput: NotificationPreferencesInput, options?: Parameters<typeof customFetch>[1]): Promise<NotificationPreferences> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<NotificationPreferences>(getUpdateNotificationPreferencesUrl(),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(notificationPreferencesInput)
+  }
+);}
+
+
+
+
+
+export const getUpdateNotificationPreferencesMutationKey = () => ['updateNotificationPreferences'] as const;
+
+export const getUpdateNotificationPreferencesMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateNotificationPreferences>>, TError,UpdateNotificationPreferencesMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateNotificationPreferences>>, TError,UpdateNotificationPreferencesMutationVariables, TContext> => {
+
+const mutationKey = getUpdateNotificationPreferencesMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateNotificationPreferences>>, UpdateNotificationPreferencesMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  updateNotificationPreferences(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateNotificationPreferencesMutationResult = NonNullable<Awaited<ReturnType<typeof updateNotificationPreferences>>>
+    export type UpdateNotificationPreferencesMutationBody = BodyType<NotificationPreferencesInput>
+    export type UpdateNotificationPreferencesMutationError = ErrorType<unknown>
+    export type UpdateNotificationPreferencesMutationVariables = {data: BodyType<NotificationPreferencesInput>}
+
+    export const useUpdateNotificationPreferences = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateNotificationPreferences>>, TError,UpdateNotificationPreferencesMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateNotificationPreferences>>,
+        TError,
+        UpdateNotificationPreferencesMutationVariables,
+        TContext
+      > => {
+      return useMutation(getUpdateNotificationPreferencesMutationOptions(options));
+    }
+
+export const getGetIntegrationSettingsUrl = () => {
+
+
+
+
+  return `/api/admin/integrations`
+}
+
+export const getIntegrationSettings = async ( options?: Parameters<typeof customFetch>[1]): Promise<IntegrationSettings> => {
+
+  return customFetch<IntegrationSettings>(getGetIntegrationSettingsUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetIntegrationSettingsQueryKey = () => {
+    return [
+    `/api/admin/integrations`
+    ] as const;
+    }
+
+
+export const getGetIntegrationSettingsQueryOptions = <TData = Awaited<ReturnType<typeof getIntegrationSettings>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getIntegrationSettings>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetIntegrationSettingsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getIntegrationSettings>>> = ({ signal }) => getIntegrationSettings({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getIntegrationSettings>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetIntegrationSettingsQueryResult = NonNullable<Awaited<ReturnType<typeof getIntegrationSettings>>>
+export type GetIntegrationSettingsQueryError = ErrorType<unknown>
+
+
+
+export function useGetIntegrationSettings<TData = Awaited<ReturnType<typeof getIntegrationSettings>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getIntegrationSettings>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetIntegrationSettingsQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getUpdateIntegrationSettingsUrl = () => {
+
+
+
+
+  return `/api/admin/integrations`
+}
+
+export const updateIntegrationSettings = async (integrationSettingsInput: IntegrationSettingsInput, options?: Parameters<typeof customFetch>[1]): Promise<IntegrationSettings> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<IntegrationSettings>(getUpdateIntegrationSettingsUrl(),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(integrationSettingsInput)
+  }
+);}
+
+
+
+
+
+export const getUpdateIntegrationSettingsMutationKey = () => ['updateIntegrationSettings'] as const;
+
+export const getUpdateIntegrationSettingsMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateIntegrationSettings>>, TError,UpdateIntegrationSettingsMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateIntegrationSettings>>, TError,UpdateIntegrationSettingsMutationVariables, TContext> => {
+
+const mutationKey = getUpdateIntegrationSettingsMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateIntegrationSettings>>, UpdateIntegrationSettingsMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  updateIntegrationSettings(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateIntegrationSettingsMutationResult = NonNullable<Awaited<ReturnType<typeof updateIntegrationSettings>>>
+    export type UpdateIntegrationSettingsMutationBody = BodyType<IntegrationSettingsInput>
+    export type UpdateIntegrationSettingsMutationError = ErrorType<unknown>
+    export type UpdateIntegrationSettingsMutationVariables = {data: BodyType<IntegrationSettingsInput>}
+
+    export const useUpdateIntegrationSettings = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateIntegrationSettings>>, TError,UpdateIntegrationSettingsMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateIntegrationSettings>>,
+        TError,
+        UpdateIntegrationSettingsMutationVariables,
+        TContext
+      > => {
+      return useMutation(getUpdateIntegrationSettingsMutationOptions(options));
+    }
+
+export const getRefreshIntegrationStatusUrl = () => {
+
+
+
+
+  return `/api/admin/integrations/check`
+}
+
+export const refreshIntegrationStatus = async ( options?: Parameters<typeof customFetch>[1]): Promise<IntegrationSettings> => {
+
+  return customFetch<IntegrationSettings>(getRefreshIntegrationStatusUrl(),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+
+export const getRefreshIntegrationStatusMutationKey = () => ['refreshIntegrationStatus'] as const;
+
+export const getRefreshIntegrationStatusMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof refreshIntegrationStatus>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof refreshIntegrationStatus>>, TError,void, TContext> => {
+
+const mutationKey = getRefreshIntegrationStatusMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof refreshIntegrationStatus>>, void> = () => {
+
+
+          return  refreshIntegrationStatus(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type RefreshIntegrationStatusMutationResult = NonNullable<Awaited<ReturnType<typeof refreshIntegrationStatus>>>
+
+    export type RefreshIntegrationStatusMutationError = ErrorType<unknown>
+
+
+    export const useRefreshIntegrationStatus = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof refreshIntegrationStatus>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof refreshIntegrationStatus>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getRefreshIntegrationStatusMutationOptions(options));
+    }
+
+export const getSendTestEmailUrl = () => {
+
+
+
+
+  return `/api/admin/integrations/test-email`
+}
+
+export const sendTestEmail = async ( options?: Parameters<typeof customFetch>[1]): Promise<EmailDelivery> => {
+
+  return customFetch<EmailDelivery>(getSendTestEmailUrl(),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+
+export const getSendTestEmailMutationKey = () => ['sendTestEmail'] as const;
+
+export const getSendTestEmailMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof sendTestEmail>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof sendTestEmail>>, TError,void, TContext> => {
+
+const mutationKey = getSendTestEmailMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof sendTestEmail>>, void> = () => {
+
+
+          return  sendTestEmail(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type SendTestEmailMutationResult = NonNullable<Awaited<ReturnType<typeof sendTestEmail>>>
+
+    export type SendTestEmailMutationError = ErrorType<unknown>
+
+
+    export const useSendTestEmail = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof sendTestEmail>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof sendTestEmail>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getSendTestEmailMutationOptions(options));
+    }
+
+export const getUploadPdfScanUrl = () => {
+
+
+
+
+  return `/api/scans/pdf`
+}
+
+export const uploadPdfScan = async (pdfScanInput: PdfScanInput, options?: Parameters<typeof customFetch>[1]): Promise<Scan> => {
+    const formData = new FormData();
+formData.append(`file`, pdfScanInput.file);
+if(pdfScanInput.sender !== undefined) {
+ formData.append(`sender`, pdfScanInput.sender);
+ }
+if(pdfScanInput.title !== undefined) {
+ formData.append(`title`, pdfScanInput.title);
+ }
+if(pdfScanInput.checkLinks !== undefined) {
+ formData.append(`checkLinks`, pdfScanInput.checkLinks);
+ }
+
+  return customFetch<Scan>(getUploadPdfScanUrl(),
+  {
+    ...options,
+    method: 'POST'
+    ,
+    body: formData
+  }
+);}
+
+
+
+
+
+export const getUploadPdfScanMutationKey = () => ['uploadPdfScan'] as const;
+
+export const getUploadPdfScanMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof uploadPdfScan>>, TError,UploadPdfScanMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof uploadPdfScan>>, TError,UploadPdfScanMutationVariables, TContext> => {
+
+const mutationKey = getUploadPdfScanMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof uploadPdfScan>>, UploadPdfScanMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  uploadPdfScan(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UploadPdfScanMutationResult = NonNullable<Awaited<ReturnType<typeof uploadPdfScan>>>
+    export type UploadPdfScanMutationBody = BodyType<PdfScanInput>
+    export type UploadPdfScanMutationError = ErrorType<void>
+    export type UploadPdfScanMutationVariables = {data: BodyType<PdfScanInput>}
+
+    export const useUploadPdfScan = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof uploadPdfScan>>, TError,UploadPdfScanMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof uploadPdfScan>>,
+        TError,
+        UploadPdfScanMutationVariables,
+        TContext
+      > => {
+      return useMutation(getUploadPdfScanMutationOptions(options));
+    }
 
 export const getGetAccountUrl = () => {
 

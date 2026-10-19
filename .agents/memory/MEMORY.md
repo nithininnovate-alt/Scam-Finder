@@ -1,1 +1,3 @@
 - [PRD interpretation](prd-interpretation.md) — phased scope, conflicting retention requirements, and evidence-only claims.
+- [Provider privacy boundaries](provider-privacy.md) — connecting a provider does not authorize sending full job offers or documents.
+- [Commercial model](commercial-model.md) — the requested three-free-scan allowance and numeric price do not establish currency or reset period.

@@ -6,10 +6,12 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { Check } from './check';
+import type { ScanPdfSource } from './scanPdfSource';
 import type { ScanStatus } from './scanStatus';
 import type { ScanVerdict } from './scanVerdict';
 import type { Signal } from './signal';
 import type { TimelineEvent } from './timelineEvent';
+import type { UrlCheck } from './urlCheck';
 
 export interface Scan {
   id: string;
@@ -35,4 +37,7 @@ export interface Scan {
   engineVersion: string;
   durationMs: number;
   timeline: TimelineEvent[];
+  linkCheckRequested?: boolean;
+  urlChecks?: UrlCheck[];
+  pdfSource?: ScanPdfSource;
 }

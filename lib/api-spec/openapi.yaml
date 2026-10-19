@@ -11,6 +11,90 @@ tags:
   - name: health
     description: Health operations
 paths:
+  /account/notifications:
+    get:
+      operationId: getNotificationPreferences
+      tags: [accounts]
+      responses:
+        "200":
+          description: Current account's email-alert preferences
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/NotificationPreferences"}
+    patch:
+      operationId: updateNotificationPreferences
+      tags: [accounts]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/NotificationPreferencesInput"}
+      responses:
+        "200":
+          description: Updated preferences
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/NotificationPreferences"}
+  /admin/integrations:
+    get:
+      operationId: getIntegrationSettings
+      tags: [admin]
+      responses:
+        "200":
+          description: Integration settings and recent email attempts, administrator only
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/IntegrationSettings"}
+    patch:
+      operationId: updateIntegrationSettings
+      tags: [admin]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/IntegrationSettingsInput"}
+      responses:
+        "200":
+          description: Saved settings
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/IntegrationSettings"}
+  /admin/integrations/check:
+    post:
+      operationId: refreshIntegrationStatus
+      tags: [admin]
+      responses:
+        "200":
+          description: Refreshed Web Risk connection health; does not send an email
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/IntegrationSettings"}
+  /admin/integrations/test-email:
+    post:
+      operationId: sendTestEmail
+      tags: [admin]
+      responses:
+        "202":
+          description: Test email queued only to the current administrator's verified primary address
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/EmailDelivery"}
+  /scans/pdf:
+    post:
+      operationId: uploadPdfScan
+      tags: [scamfind]
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema: {$ref: "#/components/schemas/PdfScanInput"}
+      responses:
+        "201":
+          description: Text-based PDF screened; original PDF is not retained
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/Scan"}
+        "422": {description: "Password protected, image-only, unreadable or excessive PDF"}
   /account:
     get:
       operationId: getAccount
@@ -213,6 +297,66 @@ paths:
                 $ref: "#/components/schemas/HealthStatus"
 components:
   schemas:
+    NotificationPreferencesInput:
+      type: object
+      required: [enabled]
+      properties:
+        enabled: {type: boolean}
+    PdfScanInput:
+      type: object
+      required: [file]
+      properties:
+        file: {type: string, format: binary}
+        sender: {type: string, maxLength: 320}
+        title: {type: string, maxLength: 160}
+        checkLinks: {type: string, enum: ["true", "false"]}
+    NotificationPreferences:
+      type: object
+      required: [enabled, email, ready, message]
+      properties:
+        enabled: {type: boolean}
+        email: {type: string}
+        ready: {type: boolean}
+        message: {type: string}
+    IntegrationSettingsInput:
+      type: object
+      required: [senderEmail, senderName, emailEnabled]
+      properties:
+        senderEmail: {type: string, maxLength: 320}
+        senderName: {type: string, minLength: 1, maxLength: 80}
+        emailEnabled: {type: boolean}
+    IntegrationSettings:
+      type: object
+      required: [senderEmail, senderName, emailEnabled, emailStatus, emailMessage, webRiskStatus, webRiskMessage, deliveries]
+      properties:
+        senderEmail: {type: string}
+        senderName: {type: string}
+        emailEnabled: {type: boolean}
+        emailStatus: {type: string, enum: [active, configured, not_connected, error]}
+        emailMessage: {type: string}
+        webRiskStatus: {type: string, enum: [active, configured, not_connected, error]}
+        webRiskMessage: {type: string}
+        deliveries: {type: array, items: {$ref: "#/components/schemas/EmailDelivery"}}
+    EmailDelivery:
+      type: object
+      required: [id, type, status, createdAt, attempts, recipient, error]
+      properties:
+        id: {type: string}
+        type: {type: string, enum: [test, case_update]}
+        status: {type: string, enum: [queued, sending, sent, failed, cancelled]}
+        createdAt: {type: string}
+        attempts: {type: integer}
+        recipient: {type: string}
+        error: {type: string}
+    UrlCheck:
+      type: object
+      required: [url, status, threatTypes, detail, checkedAt]
+      properties:
+        url: {type: string}
+        status: {type: string, enum: [listed, not_listed, unavailable, skipped]}
+        threatTypes: {type: array, items: {type: string}}
+        detail: {type: string}
+        checkedAt: {type: string}
     Account:
       type: object
       required: [id, email, name, role, createdAt]
@@ -254,6 +398,7 @@ components:
         sender: {type: string, maxLength: 320}
         title: {type: string, maxLength: 160}
         fileName: {type: string, maxLength: 255}
+        checkLinks: {type: boolean, default: false}
         source: {type: string, enum: [paste, upload, batch], default: paste}
     ScanUpdate:
       type: object
@@ -311,6 +456,15 @@ components:
         engineVersion: {type: string}
         durationMs: {type: integer}
         timeline: {type: array, items: {$ref: "#/components/schemas/TimelineEvent"}}
+        linkCheckRequested: {type: boolean}
+        urlChecks: {type: array, items: {$ref: "#/components/schemas/UrlCheck"}}
+        pdfSource:
+          type: object
+          required: [fileName, pages, warning]
+          properties:
+            fileName: {type: string}
+            pages: {type: integer}
+            warning: {type: string}
     Summary:
       type: object
       required: [total, flagged, genuine, openCases, averageDurationMs, recent]
@@ -327,7 +481,7 @@ components:
       properties:
         name: {type: string}
         capability: {type: string}
-        status: {type: string, enum: [active, not_connected]}
+        status: {type: string, enum: [active, configured, not_connected, error]}
         description: {type: string}
     HealthStatus:
       type: object

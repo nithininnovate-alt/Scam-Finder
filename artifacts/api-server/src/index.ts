@@ -1,5 +1,6 @@
 import app from "./app";
 import { logger } from "./lib/logger";
+import { purgeExpiredScans } from "./lib/scamfind-store";
 
 const rawPort = process.env["PORT"];
 
@@ -22,4 +23,7 @@ app.listen(port, (err) => {
   }
 
   logger.info({ port }, "Server listening");
+  const purge = () => purgeExpiredScans().catch(() => logger.error("Unable to purge expired cases"));
+  void purge();
+  setInterval(purge, 3600000).unref();
 });

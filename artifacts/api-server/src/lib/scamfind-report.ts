@@ -1,0 +1,46 @@
+import PDFDocument from "pdfkit";
+import type { Response } from "express";
+import type { Scan } from "./scamfind-analysis";
+
+export function sendReport(scan: Scan, res: Response) {
+  const pdf = new PDFDocument({ margin: 48, size: "A4", info: { Title: `ScamFind evidence report — ${scan.title}`, Author: "ScamFind" } });
+  res.setHeader("Content-Type", "application/pdf");
+  res.setHeader("Content-Disposition", `attachment; filename="scamfind-${scan.id}.pdf"`);
+  pdf.pipe(res);
+  const title = (value: string) => { pdf.moveDown().font("Helvetica-Bold").fontSize(14).fillColor("#163d33").text(value); pdf.moveDown(0.4).font("Helvetica").fontSize(10).fillColor("#263a36"); };
+  const line = (value: string) => { pdf.text(value, { lineGap: 3 }); pdf.moveDown(0.4); };
+  pdf.font("Helvetica-Bold").fontSize(26).fillColor("#163d33").text("ScamFind");
+  pdf.font("Helvetica").fontSize(12).text("Job offer screening / Evidence report");
+  title(scan.title);
+  line(`Case: ${scan.id}\nScreened (UTC): ${scan.createdAt}\nEngine: ${scan.engineVersion}\nStatus: ${scan.status}`);
+  title(`${scan.verdict} — Risk indicator ${scan.score}/100`);
+  line(scan.confidence);
+  line("This screening is not proof of fraud or legitimacy and is not a legal finding. No benchmark accuracy claim is made.");
+  title("Sender and evidence integrity");
+  line(`Sender: ${scan.sender || "Not supplied"}\nDomain: ${scan.domain || "Not supplied"}\nSHA-256 of submitted UTF-8 source text:\n${scan.hash}`);
+  line("The hash covers submitted source text, not the original uploaded file bytes. Preserve the original email/file separately. This export is not a certified forensic chain of custody.");
+  title("Warning signals");
+  if (!scan.signals.length) line("No configured text signals matched. This does not verify legitimacy.");
+  for (const signal of scan.signals) {
+    line(`${signal.title} (+${signal.weight} rule weight) / ${signal.category}`);
+    line(`Evidence: "${signal.evidence}"\n${signal.description}`);
+  }
+  title("Check coverage");
+  for (const check of scan.checks) line(`${check.name} [${check.status}]\n${check.detail}`);
+  title("Your verification checklist");
+  scan.checklist.forEach((item, index) => line(`${index + 1}. ${item}`));
+  title("Reporting guidance");
+  line("India: cybercrime.gov.in / urgent financial fraud helpline 1930\nCERT-In: incident@cert-in.org.in\nUS: reportfraud.ftc.gov\nInternational phishing: reportphishing@apwg.org\nNo complaint has been submitted on your behalf.");
+  title("Extracted URLs (not opened or verified)");
+  scan.links.forEach(url => line(url));
+  if (!scan.links.length) line("No URLs extracted.");
+  title("Original headers");
+  line(scan.headers || "Not available for this input.");
+  title("Normalized offer text");
+  line(scan.text);
+  title("Case notes");
+  line(scan.notes || "No notes recorded.");
+  title("Timeline (UTC)");
+  scan.timeline.forEach(item => line(`${item.at}\n${item.description}`));
+  pdf.end();
+}

@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "ScamFind"
+description = "A job-offer screening platform that identifies warning signs, explains the evidence, and helps job seekers verify and report suspicious offers."
+version = "1.0.0"
+id = "artifacts/scamfind"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 19500
+
+[services.development]
+run = "pnpm --filter @workspace/scamfind run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/scamfind", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/scamfind/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "19500"
+BASE_PATH = "/"

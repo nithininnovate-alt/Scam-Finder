@@ -11,6 +11,193 @@ tags:
   - name: health
     description: Health operations
 paths:
+  /account:
+    get:
+      operationId: getAccount
+      tags: [accounts]
+      responses:
+        "200":
+          description: Signed-in account and server-enforced role
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/Account"}
+        "401": {description: Sign in required}
+  /account/browser-scans:
+    get:
+      operationId: getBrowserScanCount
+      tags: [accounts]
+      responses:
+        "200":
+          description: Existing scans available to explicitly import
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/CountResult"}
+  /account/import-browser-scans:
+    post:
+      operationId: importBrowserScans
+      tags: [accounts]
+      responses:
+        "200":
+          description: Number of browser scans moved into the current account
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/CountResult"}
+  /admin/summary:
+    get:
+      operationId: getAdminSummary
+      tags: [admin]
+      responses:
+        "200":
+          description: Admin-only system-wide overview
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/AdminSummary"}
+        "403": {description: Administrator access required}
+  /admin/users:
+    get:
+      operationId: listAdminUsers
+      tags: [admin]
+      responses:
+        "200":
+          description: Accounts visible to administrators
+          content:
+            application/json:
+              schema: {type: array, items: {$ref: "#/components/schemas/Account"}}
+  /admin/scans:
+    get:
+      operationId: listAdminScans
+      tags: [admin]
+      responses:
+        "200":
+          description: Account-owned cases for administrator review; excludes legacy anonymous scans
+          content:
+            application/json:
+              schema: {type: array, items: {$ref: "#/components/schemas/AdminCase"}}
+  /admin/scans/{id}:
+    parameters:
+      - {name: id, in: path, required: true, schema: {type: string}}
+    get:
+      operationId: getAdminScan
+      tags: [admin]
+      responses:
+        "200":
+          description: Case evidence for authorized review
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/Scan"}
+    patch:
+      operationId: updateAdminScan
+      tags: [admin]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/ScanUpdate"}
+      responses:
+        "200":
+          description: Reviewed case with audit entry
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/Scan"}
+  /admin/scans/{id}/report:
+    get:
+      operationId: downloadAdminScanReport
+      tags: [admin]
+      parameters:
+        - {name: id, in: path, required: true, schema: {type: string}}
+      responses:
+        "200":
+          description: Administrator evidence PDF
+          content:
+            application/pdf:
+              schema: {type: string, format: binary}
+  /scans:
+    get:
+      operationId: listScans
+      tags: [scamfind]
+      responses:
+        "200":
+          description: Scans belonging only to the authenticated account
+          content:
+            application/json:
+              schema: {type: array, items: {$ref: "#/components/schemas/Scan"}}
+    post:
+      operationId: createScan
+      tags: [scamfind]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/ScanInput"}
+      responses:
+        "201":
+          description: Completed screening
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/Scan"}
+  /scans/{id}:
+    parameters:
+      - {name: id, in: path, required: true, schema: {type: string}}
+    get:
+      operationId: getScan
+      tags: [scamfind]
+      responses:
+        "200":
+          description: Evidence report
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/Scan"}
+    patch:
+      operationId: updateScan
+      tags: [scamfind]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/ScanUpdate"}
+      responses:
+        "200":
+          description: Updated case
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/Scan"}
+    delete:
+      operationId: deleteScan
+      tags: [scamfind]
+      responses:
+        "204": {description: Deleted}
+  /scans/{id}/report:
+    get:
+      operationId: downloadScanReport
+      tags: [scamfind]
+      parameters:
+        - {name: id, in: path, required: true, schema: {type: string}}
+      responses:
+        "200":
+          description: Downloadable evidence screening PDF
+          content:
+            application/pdf:
+              schema: {type: string, format: binary}
+  /summary:
+    get:
+      operationId: getSummary
+      tags: [scamfind]
+      responses:
+        "200":
+          description: Personal screening activity
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/Summary"}
+  /providers:
+    get:
+      operationId: listProviders
+      tags: [scamfind]
+      responses:
+        "200":
+          description: Honest capability availability
+          content:
+            application/json:
+              schema: {type: array, items: {$ref: "#/components/schemas/Provider"}}
   /healthz:
     get:
       operationId: healthCheck
@@ -26,6 +213,122 @@ paths:
                 $ref: "#/components/schemas/HealthStatus"
 components:
   schemas:
+    Account:
+      type: object
+      required: [id, email, name, role, createdAt]
+      properties:
+        id: {type: string}
+        email: {type: string}
+        name: {type: string}
+        role: {type: string, enum: [user, admin]}
+        createdAt: {type: string}
+    CountResult:
+      type: object
+      required: [count]
+      properties:
+        count: {type: integer}
+    AdminCase:
+      type: object
+      required: [ownerId, ownerName, ownerEmail, scan]
+      properties:
+        ownerId: {type: string}
+        ownerName: {type: string}
+        ownerEmail: {type: string}
+        scan: {$ref: "#/components/schemas/Scan"}
+    AdminSummary:
+      type: object
+      required: [users, total, flagged, openCases, escalated, overdue, recent]
+      properties:
+        users: {type: integer}
+        total: {type: integer}
+        flagged: {type: integer}
+        openCases: {type: integer}
+        escalated: {type: integer}
+        overdue: {type: integer}
+        recent: {type: array, items: {$ref: "#/components/schemas/AdminCase"}}
+    ScanInput:
+      type: object
+      required: [text]
+      properties:
+        text: {type: string, minLength: 1, maxLength: 200000}
+        sender: {type: string, maxLength: 320}
+        title: {type: string, maxLength: 160}
+        fileName: {type: string, maxLength: 255}
+        source: {type: string, enum: [paste, upload, batch], default: paste}
+    ScanUpdate:
+      type: object
+      properties:
+        status: {type: string, enum: [new, triaged, escalated, closed]}
+        notes: {type: string, maxLength: 10000}
+        feedback: {type: string, enum: [helpful, incorrect]}
+    Signal:
+      type: object
+      required: [id, title, category, weight, evidence, description]
+      properties:
+        id: {type: string}
+        title: {type: string}
+        category: {type: string}
+        weight: {type: integer}
+        evidence: {type: string}
+        description: {type: string}
+    Check:
+      type: object
+      required: [name, status, detail]
+      properties:
+        name: {type: string}
+        status: {type: string, enum: [passed, warning, unavailable, info]}
+        detail: {type: string}
+    TimelineEvent:
+      type: object
+      required: [at, description]
+      properties:
+        at: {type: string}
+        description: {type: string}
+    Scan:
+      type: object
+      required: [id, title, text, sender, domain, source, createdAt, score, verdict, confidence, status, notes, signals, checks, checklist, links, headers, hash, engineVersion, durationMs, timeline, feedback, dueAt]
+      properties:
+        id: {type: string}
+        title: {type: string}
+        text: {type: string}
+        sender: {type: string}
+        domain: {type: string}
+        source: {type: string}
+        createdAt: {type: string}
+        score: {type: integer}
+        verdict: {type: string, enum: [Likely genuine, Suspicious, Likely scam, Insufficient data]}
+        confidence: {type: string}
+        status: {type: string, enum: [new, triaged, escalated, closed]}
+        notes: {type: string}
+        feedback: {type: string}
+        dueAt: {type: string}
+        signals: {type: array, items: {$ref: "#/components/schemas/Signal"}}
+        checks: {type: array, items: {$ref: "#/components/schemas/Check"}}
+        checklist: {type: array, items: {type: string}}
+        links: {type: array, items: {type: string}}
+        headers: {type: string}
+        hash: {type: string}
+        engineVersion: {type: string}
+        durationMs: {type: integer}
+        timeline: {type: array, items: {$ref: "#/components/schemas/TimelineEvent"}}
+    Summary:
+      type: object
+      required: [total, flagged, genuine, openCases, averageDurationMs, recent]
+      properties:
+        total: {type: integer}
+        flagged: {type: integer}
+        genuine: {type: integer}
+        openCases: {type: integer}
+        averageDurationMs: {type: integer}
+        recent: {type: array, items: {$ref: "#/components/schemas/Scan"}}
+    Provider:
+      type: object
+      required: [name, capability, status, description]
+      properties:
+        name: {type: string}
+        capability: {type: string}
+        status: {type: string, enum: [active, not_connected]}
+        description: {type: string}
     HealthStatus:
       type: object
       properties:

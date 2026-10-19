@@ -1,0 +1,1 @@
+- [PRD interpretation](prd-interpretation.md) — phased scope, conflicting retention requirements, and evidence-only claims.

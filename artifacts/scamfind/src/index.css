@@ -394,8 +394,9 @@
   ::selection { background: hsl(38 82% 58% / .35); }
 }
 @layer utilities {
-  /* Keep f/ff glyphs separate in the hero; use the loaded real italic face. */
+  /* Conventional f shapes only in the hero; both 600-weight faces are loaded. */
   .hero-headline {
+    font-family: 'Source Serif 4', Georgia, serif;
     font-variant-ligatures: none;
     font-synthesis: none;
   }

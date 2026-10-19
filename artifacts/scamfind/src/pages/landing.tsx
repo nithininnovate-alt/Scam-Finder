@@ -48,7 +48,7 @@ export default function Landing() {
             <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-primary/15 bg-card px-3 py-1 font-mono text-[11px] uppercase tracking-[0.18em] text-primary rise">
               <ShieldCheck className="h-3.5 w-3.5" /> For job seekers, before they reply
             </div>
-            <h1 className="text-[2.7rem] font-semibold leading-[1.02] sm:text-6xl lg:text-[4.4rem] rise" style={{ animationDelay: '80ms' }}>
+            <h1 data-testid="text-hero-headline" className="hero-headline text-[2.7rem] font-semibold leading-[1.02] sm:text-6xl lg:text-[4.4rem] rise" style={{ animationDelay: '80ms' }}>
               That offer looks <span className="italic text-[hsl(32_80%_44%)]">perfect.</span><br />Let's read the small print.
             </h1>
             <p className="mt-6 max-w-lg text-lg leading-relaxed text-muted-foreground rise" style={{ animationDelay: '160ms' }}>

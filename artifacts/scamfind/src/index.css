@@ -394,6 +394,11 @@
   ::selection { background: hsl(38 82% 58% / .35); }
 }
 @layer utilities {
+  /* Keep f/ff glyphs separate in the hero; use the loaded real italic face. */
+  .hero-headline {
+    font-variant-ligatures: none;
+    font-synthesis: none;
+  }
   .text-safe { color: hsl(var(--safe)); } .bg-safe { background: hsl(var(--safe)); } .bg-safe-soft { background: hsl(var(--safe) / .12); }
   .text-caution { color: hsl(var(--caution)); } .bg-caution { background: hsl(var(--caution)); } .bg-caution-soft { background: hsl(var(--caution) / .13); }
   .text-alert { color: hsl(var(--alert)); } .bg-alert { background: hsl(var(--alert)); } .bg-alert-soft { background: hsl(var(--alert) / .11); }

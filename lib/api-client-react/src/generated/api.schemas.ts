@@ -17,6 +17,17 @@ export const PdfScanInputCheckLinks = {
   false: 'false',
 } as const;
 
+/**
+ * Optional per-document local English OCR. Defaults to false. No document bytes are sent to an external OCR service. Independent of link-check consent.
+ */
+export type PdfScanInputLocalOcr = typeof PdfScanInputLocalOcr[keyof typeof PdfScanInputLocalOcr];
+
+
+export const PdfScanInputLocalOcr = {
+  true: 'true',
+  false: 'false',
+} as const;
+
 export interface PdfScanInput {
   file: Blob;
   /** @maxLength 320 */
@@ -24,6 +35,8 @@ export interface PdfScanInput {
   /** @maxLength 160 */
   title?: string;
   checkLinks?: PdfScanInputCheckLinks;
+  /** Optional per-document local English OCR. Defaults to false. No document bytes are sent to an external OCR service. Independent of link-check consent. */
+  localOcr?: PdfScanInputLocalOcr;
 }
 
 export interface NotificationPreferences {

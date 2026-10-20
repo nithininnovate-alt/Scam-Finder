@@ -25,6 +25,7 @@ export * from './notificationPreferences';
 export * from './notificationPreferencesInput';
 export * from './pdfScanInput';
 export * from './pdfScanInputCheckLinks';
+export * from './pdfScanInputLocalOcr';
 export * from './provider';
 export * from './providerStatus';
 export * from './scan';

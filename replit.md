@@ -43,7 +43,7 @@ A job-offer screening web application with explainable risk indicators, evidence
 ## Product
 
 - Paste or upload `.txt`, `.html`, `.eml`, or text-based `.pdf`; optional sender; 42 weighted text/sender rules across nine categories plus any actual opt-in URL-list findings.
-- PDF uploads are limited to 5 MB and 20 pages, parsed sequentially in isolated, memory/time-bounded workers. Password-protected, unreadable and image-only documents fail explicitly. No OCR, visual authenticity or attachment malware claims.
+- PDF uploads are limited to 5 MB and 20 pages, parsed sequentially in isolated, memory/time-bounded workers. Optional per-document local English OCR uses Tesseract and Poppler with bounded native processes (512 MB, 20 CPU seconds per process, 15-second stage timeouts, 120-second document OCR budget, one OCR job at a time). The original PDF stays in memory; temporary rendered page images are deleted in finally blocks. No document bytes go to an external OCR provider. Missing tools or partial processing are explicitly reported, never treated as successful coverage. Password-protected and unreadable documents fail before OCR. No visual authenticity or attachment malware claims.
 - Google Web Risk checks up to five normalized public HTTP(S) URLs per consenting scan, strips query strings/fragments and skips credentials/private hosts. A database-backed daily cap bounds usage across instances. No-match does not establish safety.
 - The Integrations page exposes opt-in user case-update emails and role-protected sender/test/connection controls. Resend requires a sender address on a verified domain; its send-only connection cannot list or verify domains.
 - Reviewer status/notes edits and opted-in email events are saved atomically. A durable outbox rechecks consent and verified primary recipient at dispatch, retries transient failures with an idempotency key and expires delivery metadata after 30 days. Test emails require an explicit administrator action and go only to that administrator's verified address. Offer text and notes are excluded.
@@ -52,7 +52,7 @@ A job-offer screening web application with explainable risk indicators, evidence
 - Public landing page and branded sign-in/sign-up; separate personal dashboard and admin overview with account/case review.
 - Administrators can review account-owned scans and update status/notes with actor-attributed audit entries; ordinary users cannot access other users' reports.
 - Reporting guidance for official India, US and phishing-reporting destinations; never claim automatic complaint submission.
-- Deferred: `.msg`, OCR/image authenticity, analyst assignment/severity workflows, inbound forwarding, browser extension/share sheet, remaining commercial providers, trained classifier and validated accuracy/compliance. Payments are not connected; no charges or paid scan allowance are represented as active.
+- Deferred: `.msg`, image authenticity, multilingual OCR, analyst assignment/severity workflows, inbound forwarding, browser extension/share sheet, remaining commercial providers, trained classifier and validated accuracy/compliance. Payments are not connected; no charges or paid scan allowance are represented as active.
 
 ## User preferences
 

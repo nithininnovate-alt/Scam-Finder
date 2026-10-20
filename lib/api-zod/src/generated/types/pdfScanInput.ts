@@ -6,6 +6,7 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { PdfScanInputCheckLinks } from './pdfScanInputCheckLinks';
+import type { PdfScanInputLocalOcr } from './pdfScanInputLocalOcr';
 
 export interface PdfScanInput {
   file: Blob;
@@ -14,4 +15,6 @@ export interface PdfScanInput {
   /** @maxLength 160 */
   title?: string;
   checkLinks?: PdfScanInputCheckLinks;
+  /** Optional per-document local English OCR. Defaults to false. No document bytes are sent to an external OCR service. Independent of link-check consent. */
+  localOcr?: PdfScanInputLocalOcr;
 }

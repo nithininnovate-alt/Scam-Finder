@@ -121,7 +121,8 @@ export const UploadPdfScanBody = zod.object({
   "file": zod.instanceof(Blob),
   "sender": zod.string().max(uploadPdfScanBodySenderMax).optional(),
   "title": zod.string().max(uploadPdfScanBodyTitleMax).optional(),
-  "checkLinks": zod.enum(['true', 'false']).optional()
+  "checkLinks": zod.enum(['true', 'false']).optional(),
+  "localOcr": zod.enum(['true', 'false']).optional().describe('Optional per-document local English OCR. Defaults to false. No document bytes are sent to an external OCR service. Independent of link-check consent.')
 })
 
 export const UploadPdfScanResponse = zod.object({

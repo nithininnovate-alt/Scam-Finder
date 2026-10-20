@@ -27,8 +27,7 @@ async function extract() {
       page.cleanup();
     }
     const text = pages.join("\n\n").trim();
-    if (text.length < 30 || emptyPages === pdf.numPages) throw new Error("image_only");
-    return { ok: true, text, pages: pdf.numPages, warning: `${emptyPages ? `${emptyPages} page(s) had little or no readable text. ` : ""}Only extractable text and link annotations were screened. No OCR, signature validation, image authenticity or PDF malware analysis was performed. The original PDF is not retained.` };
+    return { ok: true, text, pages: pdf.numPages, emptyPages, warning: `${emptyPages ? `${emptyPages} page(s) had little or no readable text. ` : ""}Only extractable text and link annotations were screened. Images within otherwise readable pages may also contain unscreened text. No OCR, signature validation, image authenticity or PDF malware analysis was performed. The original PDF is not retained.` };
   } finally { /* The parent terminates this bounded, single-use worker. */ }
 }
 

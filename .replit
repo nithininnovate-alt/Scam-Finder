@@ -23,3 +23,7 @@ timeoutMs = 20000
 
 [userenv.shared]
 SCAMFIND_ADMIN_EMAIL = "nithin.innovate@gmail.com"
+
+[nix]
+channel = "stable-25_05"
+packages = ["tesseract", "poppler-utils"]

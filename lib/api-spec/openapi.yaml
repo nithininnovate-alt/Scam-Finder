@@ -90,11 +90,11 @@ paths:
             schema: {$ref: "#/components/schemas/PdfScanInput"}
       responses:
         "201":
-          description: Text-based PDF screened; original PDF is not retained
+          description: PDF screened using its text layer and optional local English OCR; original PDF is not retained
           content:
             application/json:
               schema: {$ref: "#/components/schemas/Scan"}
-        "422": {description: "Password protected, image-only, unreadable or excessive PDF"}
+        "422": {description: "Password protected, unreadable, excessive, or no readable text (including failed or declined OCR)"}
   /account:
     get:
       operationId: getAccount
@@ -310,6 +310,10 @@ components:
         sender: {type: string, maxLength: 320}
         title: {type: string, maxLength: 160}
         checkLinks: {type: string, enum: ["true", "false"]}
+        localOcr:
+          type: string
+          enum: ["true", "false"]
+          description: Optional per-document local English OCR. Defaults to false. No document bytes are sent to an external OCR service. Independent of link-check consent.
     NotificationPreferences:
       type: object
       required: [enabled, email, ready, message]

@@ -20,7 +20,7 @@ export function PdfSourceNote({ scan }: { scan: Scan }) {
       <FileText className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
       <div className="min-w-0 [overflow-wrap:anywhere]">
         <div className="font-medium">From PDF <span className="font-mono text-xs" data-testid="text-pdf-name">{p.fileName}</span> <span className="text-xs text-muted-foreground">· {p.pages} page{p.pages === 1 ? '' : 's'}</span></div>
-        <p className="mt-1 text-xs leading-relaxed text-muted-foreground">Only the text layer extracted from the PDF was screened. Images, scans, signatures, letterheads and layout were not examined, and nothing here says whether the document is authentic. The original file was not kept.</p>
+        <p className="mt-1 text-xs leading-relaxed text-muted-foreground">Screening uses extracted text, with local OCR only if requested for this document. See the extraction coverage below. OCR may miss or misread text. Signatures, letterheads and layout are not authenticated, and no malware analysis is performed. The original file was not kept.</p>
         {p.warning && <p className="mt-1.5 text-xs text-caution" data-testid="text-pdf-warning">{p.warning}</p>}
       </div>
     </div>

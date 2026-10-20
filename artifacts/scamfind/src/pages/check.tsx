@@ -82,6 +82,7 @@ function SingleForm() {
   const createScan = useCreateScan();
   const uploadPdf = useUploadPdfScan();
   const [pdfFile, setPdfFile] = useState<File | null>(null);
+  const [localOcr, setLocalOcr] = useState(false);
   const [checkLinks, setCheckLinks] = useState(false);
   const [text, setText] = useState('');
   const [sender, setSender] = useState('');
@@ -98,6 +99,8 @@ function SingleForm() {
   const canSubmit = (pdfFile ? true : text.trim().length > 0 && !over) && !pending;
 
   async function readFile(f: File) {
+    if (pending) return;
+    setLocalOcr(false);
     setErr(null);
     const ext = f.name.toLowerCase().split('.').pop();
     if (ext === 'pdf') {
@@ -135,6 +138,7 @@ function SingleForm() {
   }
 
   function applySample(s: (typeof SAMPLES)[number]) {
+    setLocalOcr(false);
     setText(s.text);
     setSender(s.sender);
     setTitle(s.title);
@@ -146,6 +150,7 @@ function SingleForm() {
   }
 
   function clear() {
+    setLocalOcr(false);
     setText('');
     setSender('');
     setTitle('');
@@ -161,7 +166,7 @@ function SingleForm() {
     setErr(null);
     try {
       const scan = pdfFile
-        ? await uploadPdf.mutateAsync({ data: { file: pdfFile, sender: sender.trim() || undefined, title: title.trim() || undefined, checkLinks: checkLinks ? 'true' : 'false' } })
+        ? await uploadPdf.mutateAsync({ data: { file: pdfFile, sender: sender.trim() || undefined, title: title.trim() || undefined, checkLinks: checkLinks ? 'true' : 'false', localOcr: localOcr ? 'true' : 'false' } })
         : await createScan.mutateAsync({
         data: {
           text,
@@ -215,11 +220,17 @@ function SingleForm() {
               <div className="truncate font-mono text-sm" data-testid="text-pdf-file">{pdfFile.name}</div>
               <div className="text-xs text-muted-foreground">{(pdfFile.size / 1024).toFixed(1)} KB · up to 5 MB and 20 pages</div>
               <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
-                {uploadPdf.isPending ? 'Uploading and extracting the text layer on the server…' : 'On submit, the server extracts the PDF\'s text and screens it like a pasted message. The file itself is not stored. Scanned images are not read (no OCR), and a result says nothing about whether the document is authentic. Password-protected or image-only PDFs will be returned with instructions.'}
+                {uploadPdf.isPending ? (localOcr ? 'Reading the text layer and running local OCR… This may take up to two minutes.' : 'Uploading and extracting the text layer on the server…') : 'The server screens the text layer. Enable local OCR below to also read scanned pages and image text. Originals are not retained. Password-protected or damaged PDFs cannot be read. This does not verify authenticity or detect malware.'}
               </p>
             </div>
             <button onClick={clear} disabled={pending} className="rounded p-1 hover:bg-background" aria-label="Remove PDF" data-testid="button-remove-pdf"><X className="h-4 w-4" /></button>
           </div>
+          <label className="mt-4 flex items-start gap-2 text-sm">
+            <input type="checkbox" checked={localOcr} disabled={pending} onChange={e => setLocalOcr(e.target.checked)} className="mt-1" data-testid="checkbox-local-ocr" />
+            <span>Use local OCR for this document
+              <span className="mt-1 block text-xs leading-relaxed text-muted-foreground">Optional English text recognition for scanned or mixed PDFs. Document bytes stay inside the app; no external OCR service receives them. Temporary page images are deleted after processing. OCR may misread or miss text; check the extracted evidence. This choice resets for each new file and is separate from external link checks.</span>
+            </span>
+          </label>
         </div>
       ) : (
       <div

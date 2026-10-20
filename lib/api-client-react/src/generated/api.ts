@@ -527,6 +527,9 @@ if(pdfScanInput.title !== undefined) {
 if(pdfScanInput.checkLinks !== undefined) {
  formData.append(`checkLinks`, pdfScanInput.checkLinks);
  }
+if(pdfScanInput.localOcr !== undefined) {
+ formData.append(`localOcr`, pdfScanInput.localOcr);
+ }
 
   return customFetch<Scan>(getUploadPdfScanUrl(),
   {

@@ -1,3 +1,4 @@
 - [PRD interpretation](prd-interpretation.md) — phased scope, conflicting retention requirements, and evidence-only claims.
 - [Provider privacy boundaries](provider-privacy.md) — connecting a provider does not authorize sending full job offers or documents.
 - [Commercial model](commercial-model.md) — three free searches, then ₹99 per search; the free allowance’s reset period remains unspecified.
+- [Local OCR privacy](local-ocr-privacy.md) — user chose local document OCR rather than an external provider; do not silently fall back to hosted processing.

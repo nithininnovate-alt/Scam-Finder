@@ -5,6 +5,21 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+export type ResendEventInputData = {
+  /** @maxLength 200 */
+  email_id: string;
+};
+
+export interface ResendEventInput {
+  type: string;
+  created_at: string;
+  data: ResendEventInputData;
+}
+
+export interface WebhookReceipt {
+  received: boolean;
+}
+
 export interface NotificationPreferencesInput {
   enabled: boolean;
 }
@@ -96,6 +111,20 @@ export const EmailDeliveryStatus = {
   cancelled: 'cancelled',
 } as const;
 
+export type EmailDeliveryDeliveryState = typeof EmailDeliveryDeliveryState[keyof typeof EmailDeliveryDeliveryState];
+
+
+export const EmailDeliveryDeliveryState = {
+  unconfirmed: 'unconfirmed',
+  accepted: 'accepted',
+  delayed: 'delayed',
+  delivered: 'delivered',
+  failed: 'failed',
+  suppressed: 'suppressed',
+  bounced: 'bounced',
+  complained: 'complained',
+} as const;
+
 export interface EmailDelivery {
   id: string;
   type: EmailDeliveryType;
@@ -104,6 +133,9 @@ export interface EmailDelivery {
   attempts: number;
   recipient: string;
   error: string;
+  deliveryState: EmailDeliveryDeliveryState;
+  /** Verified provider event timestamp or an empty string when none is known. */
+  deliveryEventAt: string;
 }
 
 export interface IntegrationSettings {
@@ -115,6 +147,8 @@ export interface IntegrationSettings {
   webRiskStatus: IntegrationSettingsWebRiskStatus;
   webRiskMessage: string;
   deliveries: EmailDelivery[];
+  /** Whether a webhook signing secret is configured; does not confirm provider setup. */
+  deliveryTrackingConfigured: boolean;
 }
 
 export type UrlCheckStatus = typeof UrlCheckStatus[keyof typeof UrlCheckStatus];

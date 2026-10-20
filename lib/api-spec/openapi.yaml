@@ -11,6 +11,33 @@ tags:
   - name: health
     description: Health operations
 paths:
+  /webhooks/resend:
+    post:
+      operationId: receiveResendDeliveryEvent
+      summary: Receive signature-verified email delivery metadata
+      description: Provider-only callback. Requires Svix signature headers over the raw JSON bytes, within five minutes. No account credentials. Maximum 32 KiB; compressed payloads are rejected. Supported metadata expires within 30 days. Never changes cases or sends alerts.
+      security: []
+      parameters:
+        - {name: svix-id, in: header, required: true, schema: {type: string, maxLength: 200}}
+        - {name: svix-timestamp, in: header, required: true, schema: {type: string}}
+        - {name: svix-signature, in: header, required: true, schema: {type: string, maxLength: 2048}}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/ResendEventInput"}
+      responses:
+        "200":
+          description: Event recorded, already recorded, expired or intentionally ignored
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/WebhookReceipt"}
+        "400": {description: "Invalid signature, timestamp or event"}
+        "413": {description: Payload exceeds limit}
+        "415": {description: Unsupported content type or compression}
+        "429": {description: Rate limited}
+        "500": {description: Storage failed; retry the callback}
+        "503": {description: Webhook signing secret not configured}
   /account/notifications:
     get:
       operationId: getNotificationPreferences
@@ -297,6 +324,22 @@ paths:
                 $ref: "#/components/schemas/HealthStatus"
 components:
   schemas:
+    ResendEventInput:
+      type: object
+      required: [type, created_at, data]
+      properties:
+        type: {type: string}
+        created_at: {type: string}
+        data:
+          type: object
+          required: [email_id]
+          properties:
+            email_id: {type: string, maxLength: 200}
+    WebhookReceipt:
+      type: object
+      required: [received]
+      properties:
+        received: {type: boolean}
     NotificationPreferencesInput:
       type: object
       required: [enabled]
@@ -331,7 +374,7 @@ components:
         emailEnabled: {type: boolean}
     IntegrationSettings:
       type: object
-      required: [senderEmail, senderName, emailEnabled, emailStatus, emailMessage, webRiskStatus, webRiskMessage, deliveries]
+      required: [senderEmail, senderName, emailEnabled, emailStatus, emailMessage, webRiskStatus, webRiskMessage, deliveries, deliveryTrackingConfigured]
       properties:
         senderEmail: {type: string}
         senderName: {type: string}
@@ -341,9 +384,10 @@ components:
         webRiskStatus: {type: string, enum: [active, configured, not_connected, error]}
         webRiskMessage: {type: string}
         deliveries: {type: array, items: {$ref: "#/components/schemas/EmailDelivery"}}
+        deliveryTrackingConfigured: {type: boolean, description: Whether a webhook signing secret is configured; does not confirm provider setup.}
     EmailDelivery:
       type: object
-      required: [id, type, status, createdAt, attempts, recipient, error]
+      required: [id, type, status, createdAt, attempts, recipient, error, deliveryState, deliveryEventAt]
       properties:
         id: {type: string}
         type: {type: string, enum: [test, case_update]}
@@ -352,6 +396,8 @@ components:
         attempts: {type: integer}
         recipient: {type: string}
         error: {type: string}
+        deliveryState: {type: string, enum: [unconfirmed, accepted, delayed, delivered, failed, suppressed, bounced, complained]}
+        deliveryEventAt: {type: string, description: Verified provider event timestamp or an empty string when none is known.}
     UrlCheck:
       type: object
       required: [url, status, threatTypes, detail, checkedAt]

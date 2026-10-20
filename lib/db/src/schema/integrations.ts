@@ -30,3 +30,13 @@ export const integrationUsageTable = pgTable("scamfind_integration_usage", {
   key: text("key").primaryKey(),
   used: integer("used").notNull().default(1),
 });
+
+// No addresses, subjects, bodies, bounce descriptions or original payloads.
+// Kept independently so callbacks arriving before the send response are not lost.
+export const emailEventsTable = pgTable("scamfind_email_events", {
+  id: text("id").primaryKey(),
+  providerId: text("provider_id").notNull(),
+  type: text("type").notNull(),
+  occurredAt: timestamp("occurred_at", { withTimezone: true }).notNull(),
+  receivedAt: timestamp("received_at", { withTimezone: true }).notNull().defaultNow(),
+}, table => [index("scamfind_email_event_provider_idx").on(table.providerId)]);

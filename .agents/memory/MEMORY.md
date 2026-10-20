@@ -2,3 +2,4 @@
 - [Provider privacy boundaries](provider-privacy.md) — connecting a provider does not authorize sending full job offers or documents.
 - [Commercial model](commercial-model.md) — three free searches, then ₹99 per search; the free allowance’s reset period remains unspecified.
 - [Local OCR privacy](local-ocr-privacy.md) — user chose local document OCR rather than an external provider; do not silently fall back to hosted processing.
+- [Email provider compatibility](email-provider-compatibility.md) — verify SDK return contracts and fixture-process exits; provider examples may target an older major version.

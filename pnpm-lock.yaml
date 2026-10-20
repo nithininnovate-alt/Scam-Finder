@@ -222,6 +222,9 @@ importers:
       pino-http:
         specifier: ^10.5.0
         version: 10.5.0
+      svix:
+        specifier: ^2.8.0
+        version: 2.8.0
       tldts:
         specifier: ^7.4.18
         version: 7.4.18
@@ -3211,6 +3214,10 @@ packages:
     resolution: {integrity: sha512-1tB5mhVo7U+ETBKNf92xT4hrQa3pm0MZ0PQvuDnWgAAGHDsfp4lPSpiS6psrSiet87wyGPh9ft6wmhOMQ0hDiw==}
     engines: {node: '>=14.16'}
 
+  svix@2.8.0:
+    resolution: {integrity: sha512-3bvu4FoVP9szUn5WBXUXUs97lLVC+Jyr0+jm+Q+DVcPMLXmeoZepbmbCzJVqGDNf9i00P7WLAH6m0q9HrzH1+g==}
+    engines: {node: '>=22'}
+
   swr@2.3.4:
     resolution: {integrity: sha512-bYd2lrhc+VarcpkgWclcUi92wYCpOgMws9Sd1hG1ntAu0NEy+14CbotuFjshBU2kt9rYj9TSmDcybpxpeTU1fg==}
     peerDependencies:
@@ -6063,6 +6070,10 @@ snapshots:
   strip-final-newline@4.0.0: {}
 
   strip-json-comments@5.0.3: {}
+
+  svix@2.8.0:
+    dependencies:
+      standardwebhooks: 1.1.1
 
   swr@2.3.4(react@19.1.4):
     dependencies:

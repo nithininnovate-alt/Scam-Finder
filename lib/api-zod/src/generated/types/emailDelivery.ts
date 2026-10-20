@@ -5,6 +5,7 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { EmailDeliveryDeliveryState } from './emailDeliveryDeliveryState';
 import type { EmailDeliveryStatus } from './emailDeliveryStatus';
 import type { EmailDeliveryType } from './emailDeliveryType';
 
@@ -16,4 +17,7 @@ export interface EmailDelivery {
   attempts: number;
   recipient: string;
   error: string;
+  deliveryState: EmailDeliveryDeliveryState;
+  /** Verified provider event timestamp or an empty string when none is known. */
+  deliveryEventAt: string;
 }

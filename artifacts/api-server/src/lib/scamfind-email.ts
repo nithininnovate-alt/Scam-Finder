@@ -2,9 +2,11 @@ import { randomUUID } from "node:crypto";
 import { clerkClient } from "@clerk/express";
 import { ReplitConnectors } from "@replit/connectors-sdk";
 import { and, desc, eq, inArray, lt, lte, sql } from "drizzle-orm";
-import { db, accountsTable, emailDeliveriesTable, integrationSettingsTable, scansTable } from "@workspace/db";
+import { db, accountsTable, emailDeliveriesTable, emailEventsTable, integrationSettingsTable, scansTable } from "@workspace/db";
 import { encrypt } from "./scamfind-crypto";
 import type { Scan } from "./scamfind-analysis";
+import { deliveryOutcome, EMAIL_RETENTION_MS } from "./scamfind-email-events";
+import { purgeExpiredEmailMetadata } from "./scamfind-email-retention";
 
 export async function emailSettings() {
   const [settings] = await db.select().from(integrationSettingsTable).where(eq(integrationSettingsTable.id, "main"));
@@ -29,13 +31,24 @@ export async function emailAvailability() {
 }
 
 export async function recentDeliveries() {
+  const cutoff = new Date(Date.now() - EMAIL_RETENTION_MS);
   const rows = await db.select({ job: emailDeliveriesTable, email: accountsTable.email }).from(emailDeliveriesTable)
     .innerJoin(accountsTable, eq(accountsTable.id, emailDeliveriesTable.accountId))
+    .where(sql`${emailDeliveriesTable.createdAt} > ${cutoff}`)
     .orderBy(desc(emailDeliveriesTable.createdAt)).limit(20);
-  return rows.map(({ job, email }) => ({
+  const ids = rows.map(({ job }) => job.providerId).filter(Boolean);
+  const events = ids.length ? await db.select().from(emailEventsTable).where(and(
+    inArray(emailEventsTable.providerId, ids), sql`${emailEventsTable.occurredAt} > ${cutoff}`,
+    sql`${emailEventsTable.receivedAt} > ${cutoff}`,
+  )) : [];
+  return rows.map(({ job, email }) => {
+    const outcome = deliveryOutcome(events.filter(event => event.providerId === job.providerId));
+    return ({
     id: job.id, type: job.type, status: job.status, createdAt: job.createdAt.toISOString(),
     attempts: job.attempts, recipient: job.recipient || email, error: job.error,
-  }));
+    deliveryState: outcome?.state ?? (job.status === "sent" ? "accepted" : "unconfirmed"),
+    deliveryEventAt: outcome?.at.toISOString() ?? "",
+  }); });
 }
 
 // Store the case edit and outbox event together: a mail outage cannot lose an
@@ -59,6 +72,9 @@ export async function processEmailQueue() {
   if (processing) return;
   processing = true;
   try {
+    // Purge before dispatch, including abandoned queued/sending jobs. Never send
+    // an expired alert. Reads also exclude expired metadata between purge ticks.
+    await purgeExpiredEmailMetadata();
     await db.update(emailDeliveriesTable).set({ status: "queued", error: "A previous attempt was interrupted; retrying.", nextAttemptAt: new Date() })
       .where(and(eq(emailDeliveriesTable.status, "sending"), lt(emailDeliveriesTable.updatedAt, new Date(Date.now() - 300000))));
     for (let i = 0; i < 5; i++) {
@@ -120,7 +136,5 @@ export async function processEmailQueue() {
         }).where(eq(emailDeliveriesTable.id, job.id));
       }
     }
-    // Only notification metadata is retained here; purge it after 30 days.
-    await db.delete(emailDeliveriesTable).where(and(lt(emailDeliveriesTable.createdAt, new Date(Date.now() - 30 * 86400000)), inArray(emailDeliveriesTable.status, ["sent", "failed", "cancelled"])));
   } finally { processing = false; }
 }

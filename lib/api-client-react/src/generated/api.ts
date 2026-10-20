@@ -32,10 +32,12 @@ import type {
   NotificationPreferencesInput,
   PdfScanInput,
   Provider,
+  ResendEventInput,
   Scan,
   ScanInput,
   ScanUpdate,
-  Summary
+  Summary,
+  WebhookReceipt
 } from './api.schemas';
 
 import { customFetch } from '../custom-fetch';
@@ -64,6 +66,95 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
   }
   return result;
 };
+
+export const getReceiveResendDeliveryEventUrl = () => {
+
+
+
+
+  return `/api/webhooks/resend`
+}
+
+/**
+ * Provider-only callback. Requires Svix signature headers over the raw JSON bytes, within five minutes. No account credentials. Maximum 32 KiB; compressed payloads are rejected. Supported metadata expires within 30 days. Never changes cases or sends alerts.
+ * @summary Receive signature-verified email delivery metadata
+ */
+export const receiveResendDeliveryEvent = async (resendEventInput: ResendEventInput, options?: Parameters<typeof customFetch>[1]): Promise<WebhookReceipt> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<WebhookReceipt>(getReceiveResendDeliveryEventUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(resendEventInput)
+  }
+);}
+
+
+
+
+
+export const getReceiveResendDeliveryEventMutationKey = () => ['receiveResendDeliveryEvent'] as const;
+
+export const getReceiveResendDeliveryEventMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof receiveResendDeliveryEvent>>, TError,ReceiveResendDeliveryEventMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof receiveResendDeliveryEvent>>, TError,ReceiveResendDeliveryEventMutationVariables, TContext> => {
+
+const mutationKey = getReceiveResendDeliveryEventMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof receiveResendDeliveryEvent>>, ReceiveResendDeliveryEventMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  receiveResendDeliveryEvent(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ReceiveResendDeliveryEventMutationResult = NonNullable<Awaited<ReturnType<typeof receiveResendDeliveryEvent>>>
+    export type ReceiveResendDeliveryEventMutationBody = BodyType<ResendEventInput>
+    export type ReceiveResendDeliveryEventMutationError = ErrorType<void>
+    export type ReceiveResendDeliveryEventMutationVariables = {data: BodyType<ResendEventInput>}
+
+    /**
+ * @summary Receive signature-verified email delivery metadata
+ */
+export const useReceiveResendDeliveryEvent = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof receiveResendDeliveryEvent>>, TError,ReceiveResendDeliveryEventMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof receiveResendDeliveryEvent>>,
+        TError,
+        ReceiveResendDeliveryEventMutationVariables,
+        TContext
+      > => {
+      return useMutation(getReceiveResendDeliveryEventMutationOptions(options));
+    }
 
 export const getGetNotificationPreferencesUrl = () => {
 

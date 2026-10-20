@@ -8,6 +8,39 @@
 import * as zod from 'zod';
 
 
+/**
+ * Provider-only callback. Requires Svix signature headers over the raw JSON bytes, within five minutes. No account credentials. Maximum 32 KiB; compressed payloads are rejected. Supported metadata expires within 30 days. Never changes cases or sends alerts.
+ * @summary Receive signature-verified email delivery metadata
+ */
+export const receiveResendDeliveryEventHeaderSvixIdMax = 200;
+
+export const receiveResendDeliveryEventHeaderSvixSignatureMax = 2048;
+
+
+
+export const ReceiveResendDeliveryEventHeader = zod.object({
+  "svix-id": zod.string().max(receiveResendDeliveryEventHeaderSvixIdMax),
+  "svix-timestamp": zod.string(),
+  "svix-signature": zod.string().max(receiveResendDeliveryEventHeaderSvixSignatureMax)
+})
+
+export const receiveResendDeliveryEventBodyDataEmailIdMax = 200;
+
+
+
+export const ReceiveResendDeliveryEventBody = zod.object({
+  "type": zod.string(),
+  "created_at": zod.string(),
+  "data": zod.object({
+  "email_id": zod.string().max(receiveResendDeliveryEventBodyDataEmailIdMax)
+})
+})
+
+export const ReceiveResendDeliveryEventResponse = zod.object({
+  "received": zod.boolean()
+})
+
+
 export const GetNotificationPreferencesResponse = zod.object({
   "enabled": zod.boolean(),
   "email": zod.string(),
@@ -43,8 +76,11 @@ export const GetIntegrationSettingsResponse = zod.object({
   "createdAt": zod.string(),
   "attempts": zod.number().int(),
   "recipient": zod.string(),
-  "error": zod.string()
-}))
+  "error": zod.string(),
+  "deliveryState": zod.enum(['unconfirmed', 'accepted', 'delayed', 'delivered', 'failed', 'suppressed', 'bounced', 'complained']),
+  "deliveryEventAt": zod.string().describe('Verified provider event timestamp or an empty string when none is known.')
+})),
+  "deliveryTrackingConfigured": zod.boolean().describe('Whether a webhook signing secret is configured; does not confirm provider setup.')
 })
 
 
@@ -75,8 +111,11 @@ export const UpdateIntegrationSettingsResponse = zod.object({
   "createdAt": zod.string(),
   "attempts": zod.number().int(),
   "recipient": zod.string(),
-  "error": zod.string()
-}))
+  "error": zod.string(),
+  "deliveryState": zod.enum(['unconfirmed', 'accepted', 'delayed', 'delivered', 'failed', 'suppressed', 'bounced', 'complained']),
+  "deliveryEventAt": zod.string().describe('Verified provider event timestamp or an empty string when none is known.')
+})),
+  "deliveryTrackingConfigured": zod.boolean().describe('Whether a webhook signing secret is configured; does not confirm provider setup.')
 })
 
 
@@ -95,8 +134,11 @@ export const RefreshIntegrationStatusResponse = zod.object({
   "createdAt": zod.string(),
   "attempts": zod.number().int(),
   "recipient": zod.string(),
-  "error": zod.string()
-}))
+  "error": zod.string(),
+  "deliveryState": zod.enum(['unconfirmed', 'accepted', 'delayed', 'delivered', 'failed', 'suppressed', 'bounced', 'complained']),
+  "deliveryEventAt": zod.string().describe('Verified provider event timestamp or an empty string when none is known.')
+})),
+  "deliveryTrackingConfigured": zod.boolean().describe('Whether a webhook signing secret is configured; does not confirm provider setup.')
 })
 
 
@@ -107,7 +149,9 @@ export const SendTestEmailResponse = zod.object({
   "createdAt": zod.string(),
   "attempts": zod.number().int(),
   "recipient": zod.string(),
-  "error": zod.string()
+  "error": zod.string(),
+  "deliveryState": zod.enum(['unconfirmed', 'accepted', 'delayed', 'delivered', 'failed', 'suppressed', 'bounced', 'complained']),
+  "deliveryEventAt": zod.string().describe('Verified provider event timestamp or an empty string when none is known.')
 })
 
 

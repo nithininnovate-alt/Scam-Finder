@@ -37,6 +37,17 @@ const DELIVERY: Record<EmailDelivery['status'], { label: string; cls: string }> 
   cancelled: { label: 'Cancelled', cls: 'text-muted-foreground' },
 };
 
+const OUTCOME: Record<EmailDelivery['deliveryState'], { label: string; cls: string }> = {
+  unconfirmed: { label: 'No verified delivery event', cls: 'text-unknown' },
+  accepted: { label: 'Accepted by provider', cls: 'text-caution' },
+  delayed: { label: 'Delivery delayed', cls: 'text-caution' },
+  delivered: { label: 'Delivered to mail server', cls: 'text-safe' },
+  bounced: { label: 'Bounced — permanently rejected', cls: 'text-alert' },
+  complained: { label: 'Spam complaint reported', cls: 'text-alert' },
+  failed: { label: 'Provider reported failure', cls: 'text-alert' },
+  suppressed: { label: 'Suppressed by provider', cls: 'text-alert' },
+};
+
 export function NotificationPrefsPanel() {
   const qc = useQueryClient();
   const { toast } = useToast();
@@ -87,7 +98,7 @@ export function AdminIntegrationPanel() {
     query: {
       queryKey: key,
       staleTime: 15_000,
-      refetchInterval: (q) => (q.state.data?.deliveries.some((d) => d.status === 'queued' || d.status === 'sending') ? 10_000 : false),
+      refetchInterval: 10_000,
     },
   });
   const save = useUpdateIntegrationSettings();
@@ -173,13 +184,18 @@ export function AdminIntegrationPanel() {
 
         <div className="mt-8">
           <h3 className="mb-2 flex items-center gap-2 text-lg font-semibold"><Mail className="h-4 w-4 text-primary" /> Recent deliveries</h3>
-          <p className="mb-3 text-xs text-muted-foreground">"Accepted by provider" means the provider took the message, not that it reached an inbox.</p>
+          <p className="mb-3 text-xs text-muted-foreground" data-testid="text-delivery-tracking">
+            {data.deliveryTrackingConfigured
+              ? 'Webhook signing secret configured. Delivery states update only when verified provider events arrive; this does not confirm webhook setup in Resend.'
+              : 'Delivery tracking is disabled: an approved webhook signing secret has not been configured. API acceptance alone cannot confirm delivery.'}
+          </p>
+          <p className="mb-3 text-xs text-muted-foreground">"Accepted by provider" is not proof of delivery. "Delivered to mail server" does not mean the email reached an inbox or was read. Metadata expires after 30 days. Delayed or late acceptance events do not replace a reported bounce, failure or complaint.</p>
           {data.deliveries.length === 0 ? (
             <p className="rounded-xl border border-dashed px-4 py-6 text-center text-sm text-muted-foreground">No emails yet. A test send will appear here.</p>
           ) : (
             <div className="divide-y rounded-xl border bg-background/60">
               {data.deliveries.map((d) => {
-                const m = DELIVERY[d.status] ?? DELIVERY.queued;
+                const m = d.deliveryState === 'unconfirmed' ? DELIVERY[d.status] : OUTCOME[d.deliveryState];
                 return (
                   <div key={d.id} className="flex flex-wrap items-center gap-x-4 gap-y-1 px-4 py-2.5 text-sm" data-testid={`row-delivery-${d.id}`}>
                     <span className="w-24 font-mono text-[10px] uppercase text-muted-foreground">{d.type === 'test' ? 'Test' : 'Case update'}</span>
@@ -188,6 +204,7 @@ export function AdminIntegrationPanel() {
                       {(d.status === 'queued' || d.status === 'sending') && <Loader2 className="h-3 w-3 animate-spin" />}{m.label}
                     </span>
                     <span className="font-mono text-[10px] text-muted-foreground">{d.attempts} attempt{d.attempts === 1 ? '' : 's'} · {utc(d.createdAt)}</span>
+                    {d.deliveryEventAt && <span className="w-full text-xs text-muted-foreground">Verified provider event · {utc(d.deliveryEventAt)}</span>}
                     {d.error && <span className="w-full text-xs text-alert">{d.error}</span>}
                   </div>
                 );

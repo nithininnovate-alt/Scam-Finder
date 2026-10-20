@@ -46,6 +46,7 @@ async function settingsResponse() {
   const risk = webRiskHealth();
   return GetIntegrationSettingsResponse.parse({
     ...settings, emailStatus: email.status, emailMessage: email.message,
+    deliveryTrackingConfigured: !!process.env.RESEND_WEBHOOK_SECRET,
     webRiskStatus: risk.status, webRiskMessage: risk.message, deliveries,
   });
 }
@@ -72,7 +73,7 @@ admin.post("/test-email", adminActions, async (_req, res): Promise<void> => {
   if (!recipient) { res.status(409).json({ error: "Verify your primary email address before sending a test." }); return; }
   const id = randomUUID();
   await db.insert(emailDeliveriesTable).values({ id, accountId: res.locals.account.id, type: "test", recipient });
-  res.status(202).json({ id, type: "test", status: "queued", createdAt: new Date().toISOString(), attempts: 0, recipient, error: "" });
+  res.status(202).json({ id, type: "test", status: "queued", createdAt: new Date().toISOString(), attempts: 0, recipient, error: "", deliveryState: "unconfirmed", deliveryEventAt: "" });
   void processEmailQueue().catch(() => logger.error("Email queue could not be processed"));
 });
 router.use("/admin/integrations", admin);

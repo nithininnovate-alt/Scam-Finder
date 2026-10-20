@@ -18,4 +18,6 @@ export interface IntegrationSettings {
   webRiskStatus: IntegrationSettingsWebRiskStatus;
   webRiskMessage: string;
   deliveries: EmailDelivery[];
+  /** Whether a webhook signing secret is configured; does not confirm provider setup. */
+  deliveryTrackingConfigured: boolean;
 }

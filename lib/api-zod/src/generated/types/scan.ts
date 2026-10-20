@@ -6,6 +6,7 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { Check } from './check';
+import type { PhoneCheck } from './phoneCheck';
 import type { ScanPdfSource } from './scanPdfSource';
 import type { ScanStatus } from './scanStatus';
 import type { ScanVerdict } from './scanVerdict';
@@ -38,6 +39,8 @@ export interface Scan {
   durationMs: number;
   timeline: TimelineEvent[];
   linkCheckRequested?: boolean;
+  phoneCheckRequested?: boolean;
+  phoneCheck?: PhoneCheck;
   urlChecks?: UrlCheck[];
   pdfSource?: ScanPdfSource;
 }

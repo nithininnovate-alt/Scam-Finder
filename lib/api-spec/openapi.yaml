@@ -353,6 +353,9 @@ components:
         sender: {type: string, maxLength: 320}
         title: {type: string, maxLength: 160}
         checkLinks: {type: string, enum: ["true", "false"]}
+        checkPhone: {type: string, enum: ["true", "false"]}
+        phoneNumber: {type: string, maxLength: 40}
+        phoneCountry: {type: string, pattern: "^[A-Za-z]{2}$"}
         localOcr:
           type: string
           enum: ["true", "false"]
@@ -449,7 +452,23 @@ components:
         title: {type: string, maxLength: 160}
         fileName: {type: string, maxLength: 255}
         checkLinks: {type: boolean, default: false}
+        checkPhone: {type: boolean, default: false}
+        phoneNumber: {type: string, maxLength: 40}
+        phoneCountry: {type: string, pattern: "^[A-Za-z]{2}$"}
         source: {type: string, enum: [paste, upload, batch], default: paste}
+    PhoneCheck:
+      type: object
+      required: [number, status, detail, checkedAt]
+      properties:
+        number: {type: string}
+        status: {type: string, enum: [valid, invalid, unavailable, skipped]}
+        detail: {type: string}
+        checkedAt: {type: string}
+        internationalFormat: {type: string}
+        countryName: {type: string}
+        countryCode: {type: string}
+        carrier: {type: string}
+        lineType: {type: string}
     ScanUpdate:
       type: object
       properties:
@@ -507,6 +526,8 @@ components:
         durationMs: {type: integer}
         timeline: {type: array, items: {$ref: "#/components/schemas/TimelineEvent"}}
         linkCheckRequested: {type: boolean}
+        phoneCheckRequested: {type: boolean}
+        phoneCheck: {$ref: "#/components/schemas/PhoneCheck"}
         urlChecks: {type: array, items: {$ref: "#/components/schemas/UrlCheck"}}
         pdfSource:
           type: object

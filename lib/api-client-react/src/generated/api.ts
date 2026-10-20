@@ -618,6 +618,15 @@ if(pdfScanInput.title !== undefined) {
 if(pdfScanInput.checkLinks !== undefined) {
  formData.append(`checkLinks`, pdfScanInput.checkLinks);
  }
+if(pdfScanInput.checkPhone !== undefined) {
+ formData.append(`checkPhone`, pdfScanInput.checkPhone);
+ }
+if(pdfScanInput.phoneNumber !== undefined) {
+ formData.append(`phoneNumber`, pdfScanInput.phoneNumber);
+ }
+if(pdfScanInput.phoneCountry !== undefined) {
+ formData.append(`phoneCountry`, pdfScanInput.phoneCountry);
+ }
 if(pdfScanInput.localOcr !== undefined) {
  formData.append(`localOcr`, pdfScanInput.localOcr);
  }

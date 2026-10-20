@@ -28,6 +28,7 @@ import { ErrorPanel, RiskDial, StatusPill, VerdictBadge } from '@/components/sca
 import { download, errorMessage, shortDate, statusLabel, utc, verdictPlain } from '@/lib/scan-utils';
 import { cn } from '@/lib/utils';
 import { PdfSourceNote, UrlChecksPanel, defang } from '@/components/report-extras';
+import { PhoneCheckPanel } from '@/components/phone-check';
 
 const CHECK_ICON = {
   passed: { icon: CheckCircle2, cls: 'text-safe', label: 'Passed' },
@@ -342,6 +343,9 @@ export function ReportBody({ scan, caseSlot, caseTitle = 'Case notes' }: { scan:
         </Section>
       </div>
 
+      {(scan.phoneCheckRequested !== undefined || scan.phoneCheck) && (
+        <Section n="PHONE" title="Phone number check"><PhoneCheckPanel scan={scan} /></Section>
+      )}
       {(scan.links.length > 0 || (scan.urlChecks?.length ?? 0) > 0 || scan.linkCheckRequested) && (
         <Section n="06" title="Links found in the message">
           <p className="mb-3 flex items-center gap-2 text-xs text-muted-foreground"><Link2Off className="h-3.5 w-3.5" /> Shown as plain text and never opened or fetched by ScamFind. Do not visit them to check.</p>

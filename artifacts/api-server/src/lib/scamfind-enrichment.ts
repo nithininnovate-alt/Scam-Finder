@@ -71,11 +71,14 @@ const providers = [
 ];
 
 export async function getProviders() {
+  const { probeNumverify } = await import("./scamfind-numverify");
+  const phone = await probeNumverify();
   const [{ webRiskHealth }, { emailAvailability }] = await Promise.all([import("./scamfind-webrisk"), import("./scamfind-email")]);
   const risk = webRiskHealth();
   const mail = await emailAvailability();
   return [
     ...providers,
+    { name: "Numverify", capability: "Opt-in phone number validation", status: phone.status, description: `${phone.message} One explicitly selected number per scan; 100 lookups per day application safety limit. Carrier and line type may be unavailable. No full offers or documents are sent.` },
     { name: "Google Web Risk", capability: "Opt-in malicious-link reputation", status: risk.status, description: `${risk.message} Up to 5 public URLs per scan; query strings and fragments are removed. Not-listed is not proof of safety.` },
     { name: "Resend", capability: "Opt-in case update emails", status: mail.status, description: mail.message },
   ];

@@ -31,6 +31,14 @@ export function sendReport(scan: Scan, res: Response) {
   }
   title("Check coverage");
   for (const check of scan.checks) line(`${check.name} [${check.status}]\n${check.detail}`);
+  if (scan.phoneCheckRequested !== undefined || scan.phoneCheck) {
+    title("Phone number validation");
+    if (scan.phoneCheck) {
+      const check = scan.phoneCheck;
+      line(`${check.internationalFormat || check.number} [${check.status}]\nCountry: ${check.countryName || check.countryCode || "Not provided"}; carrier: ${check.carrier || "Not provided"}; line type: ${check.lineType || "Not provided"}\n${check.detail}\nChecked (UTC): ${check.checkedAt}`);
+    } else line("Not requested. No phone number was shared with Numverify.");
+    line("Phone validity does not verify recruiter identity, ownership or safety and does not change the risk score.");
+  }
   if (scan.urlChecks?.length) {
     title("Opt-in Google Web Risk results");
     scan.urlChecks.forEach(check => line(`${check.url.replace(/^http/i, "hxxp").replace(/\./g, "[.]")} [${check.status}]\n${check.threatTypes.join(", ")}\n${check.detail}\nChecked (UTC): ${check.checkedAt}`));

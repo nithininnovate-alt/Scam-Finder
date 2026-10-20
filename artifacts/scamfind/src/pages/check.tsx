@@ -23,6 +23,7 @@ import { ErrorPanel, ScoreBar, VerdictBadge } from '@/components/scan-bits';
 import { MAX_CHARS, MAX_FILE, download, errorMessage, parseCsv, relative, scansToCsv } from '@/lib/scan-utils';
 import { cn } from '@/lib/utils';
 import { LinkConsent } from '@/components/link-consent';
+import { PhoneConsent } from '@/components/phone-consent';
 
 const MAX_PDF = 5 * 1024 * 1024;
 
@@ -83,6 +84,9 @@ function SingleForm() {
   const uploadPdf = useUploadPdfScan();
   const [pdfFile, setPdfFile] = useState<File | null>(null);
   const [localOcr, setLocalOcr] = useState(false);
+  const [checkPhone, setCheckPhone] = useState(false);
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [phoneCountry, setPhoneCountry] = useState('');
   const [checkLinks, setCheckLinks] = useState(false);
   const [text, setText] = useState('');
   const [sender, setSender] = useState('');
@@ -150,6 +154,9 @@ function SingleForm() {
   }
 
   function clear() {
+    setCheckPhone(false);
+    setPhoneNumber('');
+    setPhoneCountry('');
     setLocalOcr(false);
     setText('');
     setSender('');
@@ -164,13 +171,20 @@ function SingleForm() {
 
   async function submit() {
     setErr(null);
+    if (checkPhone && (!/^[+\d\s().-]{6,40}$/.test(phoneNumber.trim()) || !phoneNumber.trim().startsWith('+') && !phoneNumber.trim().startsWith('00') && !/^[A-Z]{2}$/.test(phoneCountry))) {
+      setErr('Enter a full international phone number beginning with +, or a local number with a two-letter country code.'); return;
+    }
     try {
       const scan = pdfFile
-        ? await uploadPdf.mutateAsync({ data: { file: pdfFile, sender: sender.trim() || undefined, title: title.trim() || undefined, checkLinks: checkLinks ? 'true' : 'false', localOcr: localOcr ? 'true' : 'false' } })
+        ? await uploadPdf.mutateAsync({ data: { file: pdfFile, sender: sender.trim() || undefined, title: title.trim() || undefined, checkLinks: checkLinks ? 'true' : 'false', localOcr: localOcr ? 'true' : 'false',
+          checkPhone: checkPhone ? 'true' : 'false', phoneNumber: checkPhone ? phoneNumber.trim() : undefined, phoneCountry: checkPhone ? phoneCountry || undefined : undefined } })
         : await createScan.mutateAsync({
         data: {
           text,
           checkLinks,
+          checkPhone,
+          phoneNumber: checkPhone ? phoneNumber.trim() : undefined,
+          phoneCountry: checkPhone ? phoneCountry || undefined : undefined,
           sender: sender.trim() || undefined,
           title: title.trim() || undefined,
           fileName: fileName ?? undefined,
@@ -297,6 +311,7 @@ function SingleForm() {
       </div>
 
       <LinkConsent checked={checkLinks} onChange={setCheckLinks} disabled={pending} />
+      <PhoneConsent checked={checkPhone} onChange={setCheckPhone} number={phoneNumber} country={phoneCountry} onNumberChange={setPhoneNumber} onCountryChange={setPhoneCountry} disabled={pending} />
 
       {err && <div className="rounded-lg bg-alert-soft px-3 py-2 text-sm text-alert rise" data-testid="text-form-error">{err}</div>}
       {over && <div className="text-sm text-alert">That is over 200,000 characters. Trim it to the offer itself.</div>}
@@ -326,6 +341,7 @@ function BatchForm() {
   const [rows, setRows] = useState<RowResult[]>([]);
   const [running, setRunning] = useState(false);
   const [checkLinks, setCheckLinks] = useState(false);
+  const [checkPhone, setCheckPhone] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const ref = useRef<HTMLInputElement>(null);
 
@@ -339,6 +355,8 @@ function BatchForm() {
     if (ti < 0) { setErr('Missing a "text" column. Expected header: text,sender,title'); return; }
     const si = head.indexOf('sender');
     const li = head.indexOf('title');
+    const pi = head.indexOf('phone');
+    const ci = head.indexOf('country_code');
     const data = parsed.slice(1);
     const init: RowResult[] = data.map((r, i) => ({ row: i + 2, title: (li >= 0 ? r[li] : '') || `Row ${i + 2}`, status: 'pending' }));
     setRows(init);
@@ -352,7 +370,9 @@ function BatchForm() {
       else {
         try {
           const scan = await createScan.mutateAsync({
-            data: { text, sender: (si >= 0 ? r[si]?.trim() : '') || undefined, title: (li >= 0 ? r[li]?.trim() : '') || undefined, source: 'batch', checkLinks },
+            data: { text, sender: (si >= 0 ? r[si]?.trim() : '') || undefined, title: (li >= 0 ? r[li]?.trim() : '') || undefined, source: 'batch', checkLinks, checkPhone,
+              phoneNumber: checkPhone && pi >= 0 ? r[pi]?.trim() || undefined : undefined,
+              phoneCountry: checkPhone && ci >= 0 ? r[ci]?.trim().toUpperCase() || undefined : undefined },
           });
           res = { ...init[i], status: 'ok', scan };
         } catch (e) {
@@ -389,6 +409,7 @@ function BatchForm() {
         <input ref={ref} type="file" accept=".csv,text/csv" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) void run(f); e.target.value = ''; }} data-testid="input-batch-file" />
       </div>
       <LinkConsent id="check-links-batch" checked={checkLinks} onChange={setCheckLinks} disabled={running} />
+      <PhoneConsent batch checked={checkPhone} onChange={setCheckPhone} disabled={running} />
       {err && <div className="rounded-lg bg-alert-soft px-3 py-2 text-sm text-alert">{err}</div>}
       {rows.length > 0 && (
         <div className="space-y-3 rise">
@@ -485,8 +506,8 @@ export default function CheckPage() {
   return (
     <>
       <PageHeader eyebrow="Offer checker" title={<>Unexpected offer? <span className="italic text-primary">Let's look at it together.</span></>} />
-      <div className="grid gap-8 lg:grid-cols-[1fr_320px]">
-        <div className="rounded-2xl border bg-card p-5 shadow-sm rise sm:p-7" style={{ animationDelay: '60ms' }}>
+      <div className="grid min-w-0 grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1fr)_320px]">
+        <div className="min-w-0 rounded-2xl border bg-card p-5 shadow-sm rise [overflow-wrap:anywhere] sm:p-7" style={{ animationDelay: '60ms' }}>
           <Tabs defaultValue="single">
             <TabsList className="mb-6">
               <TabsTrigger value="single" data-testid="tab-single">One offer</TabsTrigger>

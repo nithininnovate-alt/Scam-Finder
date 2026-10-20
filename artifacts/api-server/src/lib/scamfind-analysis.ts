@@ -7,6 +7,7 @@ import { digest } from "./scamfind-crypto";
 import { ENGINE_VERSION, rules } from "./scamfind-rules";
 import { enrichDomain, validDomain } from "./scamfind-enrichment";
 import { checkOfferLinks } from "./scamfind-webrisk";
+import { checkPhoneNumber } from "./scamfind-numverify";
 
 export type Scan = ReturnType<typeof GetScanResponse.parse>;
 type Input = ReturnType<typeof CreateScanBody.parse>;
@@ -75,6 +76,7 @@ export async function analyse(input: Input): Promise<Scan> {
   const intel = await enrichDomain(domain);
   const links = Array.from(new Set(content.match(/https?:\/\/[^\s<>"')\]]+/gi) ?? [])).slice(0, 100);
   const urlChecks = await checkOfferLinks(links, !!input.checkLinks);
+  const phoneCheck = await checkPhoneNumber(input.phoneNumber, input.phoneCountry, !!input.checkPhone);
   const listed = urlChecks.filter(check => check.status === "listed");
   if (listed.length) signals.push({
     id: "webrisk-listed", title: "A link is listed by Google Web Risk", category: "Link reputation", weight: 80,
@@ -92,6 +94,8 @@ export async function analyse(input: Input): Promise<Scan> {
         : `${urlChecks.filter(check => ["listed", "not_listed"].includes(check.status)).length} URL(s) checked against Google Web Risk; ${listed.length} listed. At most 5 normalized public URLs are queried, without query strings/fragments. Unavailable or skipped results are not clean results. No links were visited and no-match does not establish safety.`,
     },
     { name: "Mailbox ownership and company identity", status: "unavailable", detail: "Email verification, company-domain matching and company registry services are not connected." },
+    { name: "Phone number validation", status: phoneCheck?.status === "valid" ? "info" : phoneCheck?.status === "invalid" ? "warning" : "unavailable",
+      detail: phoneCheck?.detail ?? "Not requested. No phone number was shared with Numverify. Phone lookup requires separate explicit consent and does not verify recruiter identity." },
     { name: "IP reputation and text reuse", status: "unavailable", detail: "AbuseIPDB and exact-phrase search are not connected." },
     { name: "Attachment malware check", status: "unavailable", detail: attachmentNames.length ? `${attachmentNames.length} attachment(s) identified: ${attachmentNames.join(", ")}. Not executed or malware-scanned; bytes are not retained.` : "No malware-scanning service is connected. Text-only screening does not establish attachment safety." },
     { name: "ML classifier", status: "unavailable", detail: "No trained model is connected. ML contributes no score." },
@@ -124,6 +128,7 @@ export async function analyse(input: Input): Promise<Scan> {
     confidence: `Reduced confidence — rules, available public domain checks${urlChecks.some(check => ["listed", "not_listed"].includes(check.status)) ? " and opt-in Google Web Risk lookups" : ""} only. Identity verification, attachment malware analysis and ML checks have not run. Risk is an indicator, not a probability or guarantee.`,
     status, notes: "", feedback: "", dueAt: new Date(Date.now() + (verdict === "Likely scam" ? 4 : verdict === "Insufficient data" ? 72 : 24) * 3600000).toISOString(),
     signals, checks, checklist, links, headers, urlChecks, linkCheckRequested: !!input.checkLinks,
+    phoneCheck, phoneCheckRequested: !!input.checkPhone,
     hash: digest(input.text), engineVersion: ENGINE_VERSION, durationMs: Date.now() - started,
     timeline: [{ at: now, description: "Source text received; SHA-256 recorded. Uploaded text is hashed as submitted UTF-8, not as a byte-for-byte forensic file." }, { at: new Date().toISOString(), description: `Screened with ${ENGINE_VERSION}; verdict: ${verdict}. Unavailable providers recorded.` }],
   });

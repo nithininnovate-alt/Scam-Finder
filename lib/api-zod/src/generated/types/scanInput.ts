@@ -20,5 +20,10 @@ export interface ScanInput {
   /** @maxLength 255 */
   fileName?: string;
   checkLinks?: boolean;
+  checkPhone?: boolean;
+  /** @maxLength 40 */
+  phoneNumber?: string;
+  /** @pattern ^[A-Za-z]{2}$ */
+  phoneCountry?: string;
   source?: ScanInputSource;
 }

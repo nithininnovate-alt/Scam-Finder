@@ -32,6 +32,14 @@ export const PdfScanInputCheckLinks = {
   false: 'false',
 } as const;
 
+export type PdfScanInputCheckPhone = typeof PdfScanInputCheckPhone[keyof typeof PdfScanInputCheckPhone];
+
+
+export const PdfScanInputCheckPhone = {
+  true: 'true',
+  false: 'false',
+} as const;
+
 /**
  * Optional per-document local English OCR. Defaults to false. No document bytes are sent to an external OCR service. Independent of link-check consent.
  */
@@ -50,6 +58,11 @@ export interface PdfScanInput {
   /** @maxLength 160 */
   title?: string;
   checkLinks?: PdfScanInputCheckLinks;
+  checkPhone?: PdfScanInputCheckPhone;
+  /** @maxLength 40 */
+  phoneNumber?: string;
+  /** @pattern ^[A-Za-z]{2}$ */
+  phoneCountry?: string;
   /** Optional per-document local English OCR. Defaults to false. No document bytes are sent to an external OCR service. Independent of link-check consent. */
   localOcr?: PdfScanInputLocalOcr;
 }
@@ -239,6 +252,28 @@ export interface TimelineEvent {
   description: string;
 }
 
+export type PhoneCheckStatus = typeof PhoneCheckStatus[keyof typeof PhoneCheckStatus];
+
+
+export const PhoneCheckStatus = {
+  valid: 'valid',
+  invalid: 'invalid',
+  unavailable: 'unavailable',
+  skipped: 'skipped',
+} as const;
+
+export interface PhoneCheck {
+  number: string;
+  status: PhoneCheckStatus;
+  detail: string;
+  checkedAt: string;
+  internationalFormat?: string;
+  countryName?: string;
+  countryCode?: string;
+  carrier?: string;
+  lineType?: string;
+}
+
 export type ScanPdfSource = {
   fileName: string;
   pages: number;
@@ -270,6 +305,8 @@ export interface Scan {
   durationMs: number;
   timeline: TimelineEvent[];
   linkCheckRequested?: boolean;
+  phoneCheckRequested?: boolean;
+  phoneCheck?: PhoneCheck;
   urlChecks?: UrlCheck[];
   pdfSource?: ScanPdfSource;
 }
@@ -313,6 +350,11 @@ export interface ScanInput {
   /** @maxLength 255 */
   fileName?: string;
   checkLinks?: boolean;
+  checkPhone?: boolean;
+  /** @maxLength 40 */
+  phoneNumber?: string;
+  /** @pattern ^[A-Za-z]{2}$ */
+  phoneCountry?: string;
   source?: ScanInputSource;
 }
 

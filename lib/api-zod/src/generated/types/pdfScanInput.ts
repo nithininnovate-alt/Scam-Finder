@@ -6,6 +6,7 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { PdfScanInputCheckLinks } from './pdfScanInputCheckLinks';
+import type { PdfScanInputCheckPhone } from './pdfScanInputCheckPhone';
 import type { PdfScanInputLocalOcr } from './pdfScanInputLocalOcr';
 
 export interface PdfScanInput {
@@ -15,6 +16,11 @@ export interface PdfScanInput {
   /** @maxLength 160 */
   title?: string;
   checkLinks?: PdfScanInputCheckLinks;
+  checkPhone?: PdfScanInputCheckPhone;
+  /** @maxLength 40 */
+  phoneNumber?: string;
+  /** @pattern ^[A-Za-z]{2}$ */
+  phoneCountry?: string;
   /** Optional per-document local English OCR. Defaults to false. No document bytes are sent to an external OCR service. Independent of link-check consent. */
   localOcr?: PdfScanInputLocalOcr;
 }

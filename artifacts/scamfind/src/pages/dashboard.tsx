@@ -12,6 +12,7 @@ import { PageHeader } from '@/components/shell';
 import { EmptyPanel, ErrorPanel, StatusPill, VerdictBadge, ScoreBar } from '@/components/scan-bits';
 import { useAccount, useTitle } from '@/lib/auth';
 import { errorMessage, relative } from '@/lib/scan-utils';
+import { NotificationPrefsPanel } from '@/components/integration-panels';
 
 function ImportNotice() {
   const qc = useQueryClient();
@@ -120,11 +121,12 @@ export default function Dashboard() {
               <ShieldCheck className="mb-2 h-5 w-5 text-safe" />
               <p className="text-muted-foreground">A real employer will never ask you to pay to get hired.</p>
               <Link href="/resources" className="mt-3 inline-flex items-center gap-1 text-primary hover:underline" data-testid="link-dashboard-resources">How to verify <ArrowRight className="h-3.5 w-3.5" /></Link>
-              <Link href="/integrations" className="mt-2 flex items-center gap-1 text-primary hover:underline" data-testid="link-dashboard-notifications">Case update emails <ArrowRight className="h-3.5 w-3.5" /></Link>
+              <a href="#email-alerts" className="mt-2 flex items-center gap-1 text-primary hover:underline" data-testid="link-dashboard-notifications">Case update emails <ArrowRight className="h-3.5 w-3.5" /></a>
             </div>
           </aside>
         </div>
       )}
+      <div id="email-alerts" className="mt-8 scroll-mt-6"><NotificationPrefsPanel /></div>
     </>
   );
 }

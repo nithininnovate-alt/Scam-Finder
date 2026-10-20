@@ -58,7 +58,6 @@ const providers = [
   ...[
     ["WHOISXML", "Commercial WHOIS"],
     ["VirusTotal", "URL and attachment-hash reputation"],
-    ["AbuseIPDB", "Received-IP reputation"],
     ["ZeroBounce", "Mailbox verification"],
     ["Hunter", "Company-domain matching"],
     ["OpenCorporates", "Company registry verification"],
@@ -74,11 +73,14 @@ export async function getProviders() {
   const phone = await probeNumverify();
   const { probeSerpApi } = await import("./scamfind-serpapi");
   const search = await probeSerpApi();
+  const { probeAbuseIp } = await import("./scamfind-abuseipdb");
+  const ip = await probeAbuseIp();
   const [{ webRiskHealth }, { emailAvailability }] = await Promise.all([import("./scamfind-webrisk"), import("./scamfind-email")]);
   const risk = webRiskHealth();
   const mail = await emailAvailability();
   return [
     ...providers,
+    { name: "AbuseIPDB", capability: "Opt-in public-IP reputation", status: ip.status, description: `${ip.message} Only one selected public IP is shared; no full emails, documents or visitor IPs are automatically submitted. Community reports over 90 days; 100 lookups/day application safety limit. Connection checks use a fixed public resolver IP. No abuse reports are submitted.` },
     { name: "SerpAPI", capability: "Opt-in phrase reuse search", status: search.status, description: `${search.message} Only a selected short phrase is shared with SerpAPI and Google; full offers and PDFs are not sent. Up to 5 results; 25 searches/day application safety limit. Matches do not prove fraud, and no matches do not imply safety.` },
     { name: "Numverify", capability: "Opt-in phone number validation", status: phone.status, description: `${phone.message} One explicitly selected number per scan; 100 lookups per day application safety limit. Carrier and line type may be unavailable. No full offers or documents are sent.` },
     { name: "Google Web Risk", capability: "Opt-in malicious-link reputation", status: risk.status, description: `${risk.message} Up to 5 public URLs per scan; query strings and fragments are removed. Not-listed is not proof of safety.` },

@@ -195,7 +195,6 @@ export default function Landing() {
             <span>ScamFind — an evidence-first companion for job seekers.</span>
             <div className="flex gap-4">
               <Link href="/resources" className="hover:text-white" data-testid="link-footer-resources">Verify & report</Link>
-              <Link href="/integrations" className="hover:text-white" data-testid="link-footer-integrations">Integrations</Link>
               <Link href="/sign-in" className="hover:text-white" data-testid="link-footer-signin">Sign in</Link>
             </div>
           </div>

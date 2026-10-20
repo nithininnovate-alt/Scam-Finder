@@ -48,6 +48,14 @@ export const PdfScanInputCheckSearch = {
   false: 'false',
 } as const;
 
+export type PdfScanInputCheckIp = typeof PdfScanInputCheckIp[keyof typeof PdfScanInputCheckIp];
+
+
+export const PdfScanInputCheckIp = {
+  true: 'true',
+  false: 'false',
+} as const;
+
 /**
  * Optional per-document local English OCR. Defaults to false. No document bytes are sent to an external OCR service. Independent of link-check consent.
  */
@@ -68,6 +76,9 @@ export interface PdfScanInput {
   checkLinks?: PdfScanInputCheckLinks;
   checkPhone?: PdfScanInputCheckPhone;
   checkSearch?: PdfScanInputCheckSearch;
+  checkIp?: PdfScanInputCheckIp;
+  /** @maxLength 45 */
+  ipAddress?: string;
   /** @maxLength 180 */
   searchPhrase?: string;
   /** @maxLength 40 */
@@ -263,6 +274,34 @@ export interface TimelineEvent {
   description: string;
 }
 
+export type IpCheckStatus = typeof IpCheckStatus[keyof typeof IpCheckStatus];
+
+
+export const IpCheckStatus = {
+  checked: 'checked',
+  unavailable: 'unavailable',
+  skipped: 'skipped',
+} as const;
+
+export interface IpCheck {
+  ip: string;
+  status: IpCheckStatus;
+  detail: string;
+  checkedAt: string;
+  lookbackDays: number;
+  /**
+     * @minimum 0
+     * @maximum 100
+     */
+  abuseConfidenceScore?: number;
+  /** @minimum 0 */
+  totalReports?: number;
+  countryCode?: string;
+  isp?: string;
+  usageType?: string;
+  lastReportedAt?: string;
+}
+
 export type TextSearchStatus = typeof TextSearchStatus[keyof typeof TextSearchStatus];
 
 
@@ -342,6 +381,8 @@ export interface Scan {
   linkCheckRequested?: boolean;
   phoneCheckRequested?: boolean;
   textSearchRequested?: boolean;
+  ipCheckRequested?: boolean;
+  ipCheck?: IpCheck;
   textSearch?: TextSearch;
   phoneCheck?: PhoneCheck;
   urlChecks?: UrlCheck[];
@@ -389,6 +430,9 @@ export interface ScanInput {
   checkLinks?: boolean;
   checkPhone?: boolean;
   checkSearch?: boolean;
+  checkIp?: boolean;
+  /** @maxLength 45 */
+  ipAddress?: string;
   /** @maxLength 180 */
   searchPhrase?: string;
   /** @maxLength 40 */

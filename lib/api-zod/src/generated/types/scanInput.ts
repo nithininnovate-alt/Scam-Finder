@@ -22,6 +22,9 @@ export interface ScanInput {
   checkLinks?: boolean;
   checkPhone?: boolean;
   checkSearch?: boolean;
+  checkIp?: boolean;
+  /** @maxLength 45 */
+  ipAddress?: string;
   /** @maxLength 180 */
   searchPhrase?: string;
   /** @maxLength 40 */

@@ -8,7 +8,7 @@ import { analyse } from "../lib/scamfind-analysis";
 import { getScans, insertScan } from "../lib/scamfind-store";
 
 const router = Router();
-const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 5 * 1024 * 1024, files: 1, fields: 9, fieldSize: 1024 } }).single("file");
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 5 * 1024 * 1024, files: 1, fields: 11, fieldSize: 1024 } }).single("file");
 router.post("/scans/pdf", rateLimit({ windowMs: 60000, limit: 10, standardHeaders: "draft-8", legacyHeaders: false }), (req, res, next) => {
   upload(req, res, error => {
     if (error) { res.status(error.code === "LIMIT_FILE_SIZE" ? 413 : 400).json({ error: error.code === "LIMIT_FILE_SIZE" ? "PDF uploads are limited to 5 MB." : "Upload one PDF file with valid fields." }); return; }
@@ -24,13 +24,15 @@ router.post("/scans/pdf", rateLimit({ windowMs: 60000, limit: 10, standardHeader
   if (req.body.localOcr !== undefined && !["true", "false"].includes(req.body.localOcr)) { res.status(400).json({ error: "Choose whether to use local OCR." }); return; }
   if (req.body.checkPhone !== undefined && !["true", "false"].includes(req.body.checkPhone)) { res.status(400).json({ error: "Choose whether to check a phone number." }); return; }
   if (req.body.checkSearch !== undefined && !["true", "false"].includes(req.body.checkSearch)) { res.status(400).json({ error: "Choose whether to search a phrase." }); return; }
+  if (req.body.checkIp !== undefined && !["true", "false"].includes(req.body.checkIp)) { res.status(400).json({ error: "Choose whether to check an IP address." }); return; }
   let extracted;
   try { extracted = await extractOfferPdf(file.buffer, req.body.localOcr === "true"); }
   catch (error) { res.status(422).json({ error: error instanceof Error ? error.message : "Unable to extract PDF text." }); return; }
   const fileName = file.originalname.replace(/[\r\n\x00]/g, "").slice(0, 255);
   const parsed = CreateScanBody.safeParse({ text: extracted.text, sender: req.body.sender || undefined, title: req.body.title || undefined, fileName, source: "upload", checkLinks: req.body.checkLinks === "true",
     checkPhone: req.body.checkPhone === "true", phoneNumber: req.body.phoneNumber || undefined, phoneCountry: req.body.phoneCountry || undefined,
-    checkSearch: req.body.checkSearch === "true", searchPhrase: req.body.searchPhrase || undefined });
+    checkSearch: req.body.checkSearch === "true", searchPhrase: req.body.searchPhrase || undefined,
+    checkIp: req.body.checkIp === "true", ipAddress: req.body.ipAddress || undefined });
   if (!parsed.success || parsed.data.sender && !/^[^\s@]+@[a-z0-9.-]+\.[a-z]{2,}$/i.test(parsed.data.sender)) { res.status(400).json({ error: "Enter a valid sender email and title, or leave them blank." }); return; }
   const scan = await analyse(parsed.data);
   scan.pdfSource = { fileName, pages: extracted.pages, warning: extracted.warning };

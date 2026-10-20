@@ -159,6 +159,8 @@ export const uploadPdfScanBodySenderMax = 320;
 
 export const uploadPdfScanBodyTitleMax = 160;
 
+export const uploadPdfScanBodyIpAddressMax = 45;
+
 export const uploadPdfScanBodySearchPhraseMax = 180;
 
 export const uploadPdfScanBodyPhoneNumberMax = 40;
@@ -173,11 +175,20 @@ export const UploadPdfScanBody = zod.object({
   "checkLinks": zod.enum(['true', 'false']).optional(),
   "checkPhone": zod.enum(['true', 'false']).optional(),
   "checkSearch": zod.enum(['true', 'false']).optional(),
+  "checkIp": zod.enum(['true', 'false']).optional(),
+  "ipAddress": zod.string().max(uploadPdfScanBodyIpAddressMax).optional(),
   "searchPhrase": zod.string().max(uploadPdfScanBodySearchPhraseMax).optional(),
   "phoneNumber": zod.string().max(uploadPdfScanBodyPhoneNumberMax).optional(),
   "phoneCountry": zod.string().regex(uploadPdfScanBodyPhoneCountryRegExp).optional(),
   "localOcr": zod.enum(['true', 'false']).optional().describe('Optional per-document local English OCR. Defaults to false. No document bytes are sent to an external OCR service. Independent of link-check consent.')
 })
+
+export const uploadPdfScanResponseIpCheckAbuseConfidenceScoreMin = 0;
+export const uploadPdfScanResponseIpCheckAbuseConfidenceScoreMax = 100;
+
+export const uploadPdfScanResponseIpCheckTotalReportsMin = 0;
+
+
 
 export const UploadPdfScanResponse = zod.object({
   "id": zod.string(),
@@ -220,6 +231,20 @@ export const UploadPdfScanResponse = zod.object({
   "linkCheckRequested": zod.boolean().optional(),
   "phoneCheckRequested": zod.boolean().optional(),
   "textSearchRequested": zod.boolean().optional(),
+  "ipCheckRequested": zod.boolean().optional(),
+  "ipCheck": zod.object({
+  "ip": zod.string(),
+  "status": zod.enum(['checked', 'unavailable', 'skipped']),
+  "detail": zod.string(),
+  "checkedAt": zod.string(),
+  "lookbackDays": zod.number().int(),
+  "abuseConfidenceScore": zod.number().int().min(uploadPdfScanResponseIpCheckAbuseConfidenceScoreMin).max(uploadPdfScanResponseIpCheckAbuseConfidenceScoreMax).optional(),
+  "totalReports": zod.number().int().min(uploadPdfScanResponseIpCheckTotalReportsMin).optional(),
+  "countryCode": zod.string().optional(),
+  "isp": zod.string().optional(),
+  "usageType": zod.string().optional(),
+  "lastReportedAt": zod.string().optional()
+}).optional(),
   "textSearch": zod.object({
   "phrase": zod.string(),
   "status": zod.enum(['matches_found', 'no_matches', 'unavailable', 'skipped']),
@@ -276,6 +301,13 @@ export const ImportBrowserScansResponse = zod.object({
 })
 
 
+export const getAdminSummaryResponseRecentItemScanIpCheckAbuseConfidenceScoreMin = 0;
+export const getAdminSummaryResponseRecentItemScanIpCheckAbuseConfidenceScoreMax = 100;
+
+export const getAdminSummaryResponseRecentItemScanIpCheckTotalReportsMin = 0;
+
+
+
 export const GetAdminSummaryResponse = zod.object({
   "users": zod.number().int(),
   "total": zod.number().int(),
@@ -328,6 +360,20 @@ export const GetAdminSummaryResponse = zod.object({
   "linkCheckRequested": zod.boolean().optional(),
   "phoneCheckRequested": zod.boolean().optional(),
   "textSearchRequested": zod.boolean().optional(),
+  "ipCheckRequested": zod.boolean().optional(),
+  "ipCheck": zod.object({
+  "ip": zod.string(),
+  "status": zod.enum(['checked', 'unavailable', 'skipped']),
+  "detail": zod.string(),
+  "checkedAt": zod.string(),
+  "lookbackDays": zod.number().int(),
+  "abuseConfidenceScore": zod.number().int().min(getAdminSummaryResponseRecentItemScanIpCheckAbuseConfidenceScoreMin).max(getAdminSummaryResponseRecentItemScanIpCheckAbuseConfidenceScoreMax).optional(),
+  "totalReports": zod.number().int().min(getAdminSummaryResponseRecentItemScanIpCheckTotalReportsMin).optional(),
+  "countryCode": zod.string().optional(),
+  "isp": zod.string().optional(),
+  "usageType": zod.string().optional(),
+  "lastReportedAt": zod.string().optional()
+}).optional(),
   "textSearch": zod.object({
   "phrase": zod.string(),
   "status": zod.enum(['matches_found', 'no_matches', 'unavailable', 'skipped']),
@@ -377,6 +423,13 @@ export const ListAdminUsersResponseItem = zod.object({
 export const ListAdminUsersResponse = zod.array(ListAdminUsersResponseItem)
 
 
+export const listAdminScansResponseScanIpCheckAbuseConfidenceScoreMin = 0;
+export const listAdminScansResponseScanIpCheckAbuseConfidenceScoreMax = 100;
+
+export const listAdminScansResponseScanIpCheckTotalReportsMin = 0;
+
+
+
 export const ListAdminScansResponseItem = zod.object({
   "ownerId": zod.string(),
   "ownerName": zod.string(),
@@ -422,6 +475,20 @@ export const ListAdminScansResponseItem = zod.object({
   "linkCheckRequested": zod.boolean().optional(),
   "phoneCheckRequested": zod.boolean().optional(),
   "textSearchRequested": zod.boolean().optional(),
+  "ipCheckRequested": zod.boolean().optional(),
+  "ipCheck": zod.object({
+  "ip": zod.string(),
+  "status": zod.enum(['checked', 'unavailable', 'skipped']),
+  "detail": zod.string(),
+  "checkedAt": zod.string(),
+  "lookbackDays": zod.number().int(),
+  "abuseConfidenceScore": zod.number().int().min(listAdminScansResponseScanIpCheckAbuseConfidenceScoreMin).max(listAdminScansResponseScanIpCheckAbuseConfidenceScoreMax).optional(),
+  "totalReports": zod.number().int().min(listAdminScansResponseScanIpCheckTotalReportsMin).optional(),
+  "countryCode": zod.string().optional(),
+  "isp": zod.string().optional(),
+  "usageType": zod.string().optional(),
+  "lastReportedAt": zod.string().optional()
+}).optional(),
   "textSearch": zod.object({
   "phrase": zod.string(),
   "status": zod.enum(['matches_found', 'no_matches', 'unavailable', 'skipped']),
@@ -465,6 +532,13 @@ export const GetAdminScanParams = zod.object({
   "id": zod.coerce.string()
 })
 
+export const getAdminScanResponseIpCheckAbuseConfidenceScoreMin = 0;
+export const getAdminScanResponseIpCheckAbuseConfidenceScoreMax = 100;
+
+export const getAdminScanResponseIpCheckTotalReportsMin = 0;
+
+
+
 export const GetAdminScanResponse = zod.object({
   "id": zod.string(),
   "title": zod.string(),
@@ -506,6 +580,20 @@ export const GetAdminScanResponse = zod.object({
   "linkCheckRequested": zod.boolean().optional(),
   "phoneCheckRequested": zod.boolean().optional(),
   "textSearchRequested": zod.boolean().optional(),
+  "ipCheckRequested": zod.boolean().optional(),
+  "ipCheck": zod.object({
+  "ip": zod.string(),
+  "status": zod.enum(['checked', 'unavailable', 'skipped']),
+  "detail": zod.string(),
+  "checkedAt": zod.string(),
+  "lookbackDays": zod.number().int(),
+  "abuseConfidenceScore": zod.number().int().min(getAdminScanResponseIpCheckAbuseConfidenceScoreMin).max(getAdminScanResponseIpCheckAbuseConfidenceScoreMax).optional(),
+  "totalReports": zod.number().int().min(getAdminScanResponseIpCheckTotalReportsMin).optional(),
+  "countryCode": zod.string().optional(),
+  "isp": zod.string().optional(),
+  "usageType": zod.string().optional(),
+  "lastReportedAt": zod.string().optional()
+}).optional(),
   "textSearch": zod.object({
   "phrase": zod.string(),
   "status": zod.enum(['matches_found', 'no_matches', 'unavailable', 'skipped']),
@@ -557,6 +645,13 @@ export const UpdateAdminScanBody = zod.object({
   "feedback": zod.enum(['helpful', 'incorrect']).optional()
 })
 
+export const updateAdminScanResponseIpCheckAbuseConfidenceScoreMin = 0;
+export const updateAdminScanResponseIpCheckAbuseConfidenceScoreMax = 100;
+
+export const updateAdminScanResponseIpCheckTotalReportsMin = 0;
+
+
+
 export const UpdateAdminScanResponse = zod.object({
   "id": zod.string(),
   "title": zod.string(),
@@ -598,6 +693,20 @@ export const UpdateAdminScanResponse = zod.object({
   "linkCheckRequested": zod.boolean().optional(),
   "phoneCheckRequested": zod.boolean().optional(),
   "textSearchRequested": zod.boolean().optional(),
+  "ipCheckRequested": zod.boolean().optional(),
+  "ipCheck": zod.object({
+  "ip": zod.string(),
+  "status": zod.enum(['checked', 'unavailable', 'skipped']),
+  "detail": zod.string(),
+  "checkedAt": zod.string(),
+  "lookbackDays": zod.number().int(),
+  "abuseConfidenceScore": zod.number().int().min(updateAdminScanResponseIpCheckAbuseConfidenceScoreMin).max(updateAdminScanResponseIpCheckAbuseConfidenceScoreMax).optional(),
+  "totalReports": zod.number().int().min(updateAdminScanResponseIpCheckTotalReportsMin).optional(),
+  "countryCode": zod.string().optional(),
+  "isp": zod.string().optional(),
+  "usageType": zod.string().optional(),
+  "lastReportedAt": zod.string().optional()
+}).optional(),
   "textSearch": zod.object({
   "phrase": zod.string(),
   "status": zod.enum(['matches_found', 'no_matches', 'unavailable', 'skipped']),
@@ -642,6 +751,13 @@ export const DownloadAdminScanReportParams = zod.object({
 export const DownloadAdminScanReportResponse = zod.unknown()
 
 
+export const listScansResponseIpCheckAbuseConfidenceScoreMin = 0;
+export const listScansResponseIpCheckAbuseConfidenceScoreMax = 100;
+
+export const listScansResponseIpCheckTotalReportsMin = 0;
+
+
+
 export const ListScansResponseItem = zod.object({
   "id": zod.string(),
   "title": zod.string(),
@@ -683,6 +799,20 @@ export const ListScansResponseItem = zod.object({
   "linkCheckRequested": zod.boolean().optional(),
   "phoneCheckRequested": zod.boolean().optional(),
   "textSearchRequested": zod.boolean().optional(),
+  "ipCheckRequested": zod.boolean().optional(),
+  "ipCheck": zod.object({
+  "ip": zod.string(),
+  "status": zod.enum(['checked', 'unavailable', 'skipped']),
+  "detail": zod.string(),
+  "checkedAt": zod.string(),
+  "lookbackDays": zod.number().int(),
+  "abuseConfidenceScore": zod.number().int().min(listScansResponseIpCheckAbuseConfidenceScoreMin).max(listScansResponseIpCheckAbuseConfidenceScoreMax).optional(),
+  "totalReports": zod.number().int().min(listScansResponseIpCheckTotalReportsMin).optional(),
+  "countryCode": zod.string().optional(),
+  "isp": zod.string().optional(),
+  "usageType": zod.string().optional(),
+  "lastReportedAt": zod.string().optional()
+}).optional(),
   "textSearch": zod.object({
   "phrase": zod.string(),
   "status": zod.enum(['matches_found', 'no_matches', 'unavailable', 'skipped']),
@@ -732,6 +862,9 @@ export const createScanBodyFileNameMax = 255;
 export const createScanBodyCheckLinksDefault = false;
 export const createScanBodyCheckPhoneDefault = false;
 export const createScanBodyCheckSearchDefault = false;
+export const createScanBodyCheckIpDefault = false;
+export const createScanBodyIpAddressMax = 45;
+
 export const createScanBodySearchPhraseMax = 180;
 
 export const createScanBodyPhoneNumberMax = 40;
@@ -747,11 +880,20 @@ export const CreateScanBody = zod.object({
   "checkLinks": zod.boolean().default(createScanBodyCheckLinksDefault),
   "checkPhone": zod.boolean().default(createScanBodyCheckPhoneDefault),
   "checkSearch": zod.boolean().default(createScanBodyCheckSearchDefault),
+  "checkIp": zod.boolean().default(createScanBodyCheckIpDefault),
+  "ipAddress": zod.string().max(createScanBodyIpAddressMax).optional(),
   "searchPhrase": zod.string().max(createScanBodySearchPhraseMax).optional(),
   "phoneNumber": zod.string().max(createScanBodyPhoneNumberMax).optional(),
   "phoneCountry": zod.string().regex(createScanBodyPhoneCountryRegExp).optional(),
   "source": zod.enum(['paste', 'upload', 'batch']).default(createScanBodySourceDefault)
 })
+
+export const createScanResponseIpCheckAbuseConfidenceScoreMin = 0;
+export const createScanResponseIpCheckAbuseConfidenceScoreMax = 100;
+
+export const createScanResponseIpCheckTotalReportsMin = 0;
+
+
 
 export const CreateScanResponse = zod.object({
   "id": zod.string(),
@@ -794,6 +936,20 @@ export const CreateScanResponse = zod.object({
   "linkCheckRequested": zod.boolean().optional(),
   "phoneCheckRequested": zod.boolean().optional(),
   "textSearchRequested": zod.boolean().optional(),
+  "ipCheckRequested": zod.boolean().optional(),
+  "ipCheck": zod.object({
+  "ip": zod.string(),
+  "status": zod.enum(['checked', 'unavailable', 'skipped']),
+  "detail": zod.string(),
+  "checkedAt": zod.string(),
+  "lookbackDays": zod.number().int(),
+  "abuseConfidenceScore": zod.number().int().min(createScanResponseIpCheckAbuseConfidenceScoreMin).max(createScanResponseIpCheckAbuseConfidenceScoreMax).optional(),
+  "totalReports": zod.number().int().min(createScanResponseIpCheckTotalReportsMin).optional(),
+  "countryCode": zod.string().optional(),
+  "isp": zod.string().optional(),
+  "usageType": zod.string().optional(),
+  "lastReportedAt": zod.string().optional()
+}).optional(),
   "textSearch": zod.object({
   "phrase": zod.string(),
   "status": zod.enum(['matches_found', 'no_matches', 'unavailable', 'skipped']),
@@ -834,6 +990,13 @@ export const CreateScanResponse = zod.object({
 export const GetScanParams = zod.object({
   "id": zod.coerce.string()
 })
+
+export const getScanResponseIpCheckAbuseConfidenceScoreMin = 0;
+export const getScanResponseIpCheckAbuseConfidenceScoreMax = 100;
+
+export const getScanResponseIpCheckTotalReportsMin = 0;
+
+
 
 export const GetScanResponse = zod.object({
   "id": zod.string(),
@@ -876,6 +1039,20 @@ export const GetScanResponse = zod.object({
   "linkCheckRequested": zod.boolean().optional(),
   "phoneCheckRequested": zod.boolean().optional(),
   "textSearchRequested": zod.boolean().optional(),
+  "ipCheckRequested": zod.boolean().optional(),
+  "ipCheck": zod.object({
+  "ip": zod.string(),
+  "status": zod.enum(['checked', 'unavailable', 'skipped']),
+  "detail": zod.string(),
+  "checkedAt": zod.string(),
+  "lookbackDays": zod.number().int(),
+  "abuseConfidenceScore": zod.number().int().min(getScanResponseIpCheckAbuseConfidenceScoreMin).max(getScanResponseIpCheckAbuseConfidenceScoreMax).optional(),
+  "totalReports": zod.number().int().min(getScanResponseIpCheckTotalReportsMin).optional(),
+  "countryCode": zod.string().optional(),
+  "isp": zod.string().optional(),
+  "usageType": zod.string().optional(),
+  "lastReportedAt": zod.string().optional()
+}).optional(),
   "textSearch": zod.object({
   "phrase": zod.string(),
   "status": zod.enum(['matches_found', 'no_matches', 'unavailable', 'skipped']),
@@ -927,6 +1104,13 @@ export const UpdateScanBody = zod.object({
   "feedback": zod.enum(['helpful', 'incorrect']).optional()
 })
 
+export const updateScanResponseIpCheckAbuseConfidenceScoreMin = 0;
+export const updateScanResponseIpCheckAbuseConfidenceScoreMax = 100;
+
+export const updateScanResponseIpCheckTotalReportsMin = 0;
+
+
+
 export const UpdateScanResponse = zod.object({
   "id": zod.string(),
   "title": zod.string(),
@@ -968,6 +1152,20 @@ export const UpdateScanResponse = zod.object({
   "linkCheckRequested": zod.boolean().optional(),
   "phoneCheckRequested": zod.boolean().optional(),
   "textSearchRequested": zod.boolean().optional(),
+  "ipCheckRequested": zod.boolean().optional(),
+  "ipCheck": zod.object({
+  "ip": zod.string(),
+  "status": zod.enum(['checked', 'unavailable', 'skipped']),
+  "detail": zod.string(),
+  "checkedAt": zod.string(),
+  "lookbackDays": zod.number().int(),
+  "abuseConfidenceScore": zod.number().int().min(updateScanResponseIpCheckAbuseConfidenceScoreMin).max(updateScanResponseIpCheckAbuseConfidenceScoreMax).optional(),
+  "totalReports": zod.number().int().min(updateScanResponseIpCheckTotalReportsMin).optional(),
+  "countryCode": zod.string().optional(),
+  "isp": zod.string().optional(),
+  "usageType": zod.string().optional(),
+  "lastReportedAt": zod.string().optional()
+}).optional(),
   "textSearch": zod.object({
   "phrase": zod.string(),
   "status": zod.enum(['matches_found', 'no_matches', 'unavailable', 'skipped']),
@@ -1019,6 +1217,13 @@ export const DownloadScanReportParams = zod.object({
 export const DownloadScanReportResponse = zod.unknown()
 
 
+export const getSummaryResponseRecentItemIpCheckAbuseConfidenceScoreMin = 0;
+export const getSummaryResponseRecentItemIpCheckAbuseConfidenceScoreMax = 100;
+
+export const getSummaryResponseRecentItemIpCheckTotalReportsMin = 0;
+
+
+
 export const GetSummaryResponse = zod.object({
   "total": zod.number().int(),
   "flagged": zod.number().int(),
@@ -1066,6 +1271,20 @@ export const GetSummaryResponse = zod.object({
   "linkCheckRequested": zod.boolean().optional(),
   "phoneCheckRequested": zod.boolean().optional(),
   "textSearchRequested": zod.boolean().optional(),
+  "ipCheckRequested": zod.boolean().optional(),
+  "ipCheck": zod.object({
+  "ip": zod.string(),
+  "status": zod.enum(['checked', 'unavailable', 'skipped']),
+  "detail": zod.string(),
+  "checkedAt": zod.string(),
+  "lookbackDays": zod.number().int(),
+  "abuseConfidenceScore": zod.number().int().min(getSummaryResponseRecentItemIpCheckAbuseConfidenceScoreMin).max(getSummaryResponseRecentItemIpCheckAbuseConfidenceScoreMax).optional(),
+  "totalReports": zod.number().int().min(getSummaryResponseRecentItemIpCheckTotalReportsMin).optional(),
+  "countryCode": zod.string().optional(),
+  "isp": zod.string().optional(),
+  "usageType": zod.string().optional(),
+  "lastReportedAt": zod.string().optional()
+}).optional(),
   "textSearch": zod.object({
   "phrase": zod.string(),
   "status": zod.enum(['matches_found', 'no_matches', 'unavailable', 'skipped']),

@@ -19,7 +19,6 @@ const PERSONAL: NavItem[] = [
 ];
 const GUIDE: NavItem[] = [
   { href: '/resources', label: 'Verify & report', icon: LifeBuoy },
-  { href: '/integrations', label: 'Integrations', icon: Plug },
 ];
 
 export function Logo({ className }: { className?: string }) {
@@ -77,7 +76,7 @@ function Nav({ onNavigate }: { onNavigate?: () => void }) {
   return (
     <div className="space-y-6">
       <NavGroup title="Personal" items={PERSONAL} onNavigate={onNavigate} />
-      {account?.role === 'admin' && <NavGroup title="Review desk" items={[{ href: '/admin', label: 'Admin dashboard', icon: ShieldCheck }]} onNavigate={onNavigate} />}
+      {account?.role === 'admin' && <NavGroup title="Review desk" items={[{ href: '/admin', label: 'Admin dashboard', icon: ShieldCheck }, { href: '/integrations', label: 'Integrations', icon: Plug }]} onNavigate={onNavigate} />}
       <NavGroup title="Guidance" items={GUIDE} onNavigate={onNavigate} />
     </div>
   );

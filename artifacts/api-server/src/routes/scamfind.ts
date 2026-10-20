@@ -6,7 +6,7 @@ import { analyse } from "../lib/scamfind-analysis";
 import { findScan, getScans, insertScan, removeScan, saveScan } from "../lib/scamfind-store";
 import { getProviders } from "../lib/scamfind-enrichment";
 import { sendReport } from "../lib/scamfind-report";
-import { requireAccount } from "../middlewares/scamfind-account";
+import { requireAccount, requireAdmin } from "../middlewares/scamfind-account";
 import accountsRouter from "./scamfind-accounts";
 import adminRouter from "./scamfind-admin";
 import { recordCaseUpdate } from "../lib/scamfind-admin";
@@ -18,8 +18,8 @@ router.use(personalSession);
 router.use(rateLimit({ windowMs: 60000, limit: 200, standardHeaders: "draft-8", legacyHeaders: false, message: { error: "Too many requests. Please wait a minute." } }));
 const scanLimit = rateLimit({ windowMs: 60000, limit: 30, standardHeaders: "draft-8", legacyHeaders: false, message: { error: "Screening limit reached. Please wait one minute before continuing." } });
 
-router.get("/providers", async (_req, res) => { res.json(ListProvidersResponse.parse(await getProviders())); });
 router.use(requireAccount);
+router.get("/providers", requireAdmin, async (_req, res) => { res.json(ListProvidersResponse.parse(await getProviders())); });
 router.use(integrationsRouter);
 router.use(pdfRouter);
 router.use(accountsRouter);

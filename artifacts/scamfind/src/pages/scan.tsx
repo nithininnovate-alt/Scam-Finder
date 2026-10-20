@@ -30,6 +30,7 @@ import { cn } from '@/lib/utils';
 import { PdfSourceNote, UrlChecksPanel, defang } from '@/components/report-extras';
 import { PhoneCheckPanel } from '@/components/phone-check';
 import { TextSearchPanel } from '@/components/text-search';
+import { IpCheckPanel } from '@/components/ip-check';
 
 const CHECK_ICON = {
   passed: { icon: CheckCircle2, cls: 'text-safe', label: 'Passed' },
@@ -349,6 +350,9 @@ export function ReportBody({ scan, caseSlot, caseTitle = 'Case notes' }: { scan:
       )}
       {(scan.textSearchRequested !== undefined || scan.textSearch) && (
         <Section n="SEARCH" title="Phrase reuse search"><TextSearchPanel scan={scan} /></Section>
+      )}
+      {(scan.ipCheckRequested !== undefined || scan.ipCheck) && (
+        <Section n="IP" title="Public-IP reputation"><IpCheckPanel scan={scan} /></Section>
       )}
       {(scan.links.length > 0 || (scan.urlChecks?.length ?? 0) > 0 || scan.linkCheckRequested) && (
         <Section n="06" title="Links found in the message">

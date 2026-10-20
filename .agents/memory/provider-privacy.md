@@ -1,6 +1,6 @@
 ---
 name: Provider privacy boundaries
-description: Consent boundaries for document, link, phone, search and email providers.
+description: Consent boundaries for document, link, phone, search, IP and email providers.
 ---
 
 Treat consent to link-reputation lookup as narrower than consent to send a whole offer, PDF or image to a third-party service. A connected service is not permission to transmit additional content.
@@ -20,6 +20,12 @@ Search-engine text reuse needs separate opt-in and a user-reviewed short phrase;
 **Why:** A connected search API can disclose confidential offer contents to both the API provider and a search engine. Search matches alone do not establish fraud.
 
 **How to apply:** Share only the explicitly selected phrase. Block common numeric identifiers, email and web addresses; warn users to remove names and confidential details. Keep search results separate from the risk score and disclose search-coverage limitations.
+
+IP reputation is lookup-only and needs separate consent for one selected public IP. Do not automatically use a visitor's address, resolve offer links, send full email headers or submit abuse reports.
+
+**Why:** Users approved lookup-only access. Mail-routing IPs may belong to shared infrastructure, so community reports do not establish recruiter identity or job fraud.
+
+**How to apply:** Reject private and special-use IPs. Keep provider abuse-confidence separate from ScamFind's risk score. Any connection probe must use a fixed public infrastructure IP, not a user's IP.
 
 Keep Resend's sending-only authorization unchanged when adding delivery tracking.
 Webhook management and its verification configuration require separate owner

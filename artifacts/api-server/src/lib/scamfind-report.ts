@@ -31,6 +31,15 @@ export function sendReport(scan: Scan, res: Response) {
   }
   title("Check coverage");
   for (const check of scan.checks) line(`${check.name} [${check.status}]\n${check.detail}`);
+  if (scan.ipCheckRequested !== undefined || scan.ipCheck) {
+    title("Opt-in AbuseIPDB IP reputation");
+    if (scan.ipCheck) {
+      const check = scan.ipCheck;
+      line(`${check.ip} [${check.status}]\n${check.detail}\nChecked (UTC): ${check.checkedAt}; lookback: ${check.lookbackDays} days`);
+      if (check.status === "checked") line(`AbuseIPDB abuse-confidence: ${check.abuseConfidenceScore}/100; reports: ${check.totalReports}\nCountry code: ${check.countryCode || "Not provided"}; ISP: ${check.isp || "Not provided"}; usage: ${check.usageType || "Not provided"}${check.lastReportedAt ? `\nLast reported (UTC): ${check.lastReportedAt}` : ""}`);
+    } else line("Not requested. No IP from this scan was shared with AbuseIPDB.");
+    line("Community IP reputation does not identify a recruiter or prove fraud. A zero score is not proof of safety. This metric is not ScamFind's risk score and does not change it.");
+  }
   if (scan.textSearchRequested !== undefined || scan.textSearch) {
     title("Opt-in phrase reuse search");
     if (scan.textSearch) {

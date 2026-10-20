@@ -62,9 +62,13 @@ A job-offer screening web application with explainable risk indicators, evidence
 
 ## Gotchas
 
+- Integration configuration, provider availability and `/api/providers` are administrator-only; customers and public visitors must not see the integrations page or navigation. Customer email-alert preferences remain available on the personal dashboard. Preserve the separate data-sharing consent notices on optional scan checks.
+
+- AbuseIPDB uses server-only `ABUSEIPDB_API_KEY` for HTTPS `/api/v2/check` lookups only (never reports). Separate consent plus one selected public IP is required; private/special-use addresses, URLs and hostnames are rejected. No full emails, documents or automatic visitor-IP lookups. Results are encrypted case snapshots and exported to PDF; community abuse confidence does not change ScamFind's risk score. 90-day lookback, 100-request daily UTC safety cap, bounded 10-minute cache. One initial access probe per process uses the fixed public resolver `1.1.1.1`; explicit admin rechecks also use it. Test: `pnpm --filter @workspace/api-server test:abuseipdb`.
+
 - SerpAPI uses server-only `SERPAPI_API_KEY` and HTTPS. A free account probe verifies access without transmitting offer content. Phrase reuse searches need separate explicit consent and a manually reviewed short phrase (or a reviewed `search_phrase` CSV column); full offers, uploaded files, numeric identifiers, email and web addresses are not submitted. Results are saved as encrypted case snapshots and exported to PDF; they do not affect the risk score. Daily UTC safety cap: 25 search requests; 10-minute bounded result cache. Run `pnpm --filter @workspace/api-server test:serpapi` for mocked consent, quota, caching and failure checks.
 
-- Do not fetch offer URLs or render uploaded HTML. External calls use fixed DNS/RDAP, Google Web Risk, Numverify, SerpAPI, identity-provider and email-service endpoints; never target arbitrary URLs supplied in offers.
+- Do not fetch offer URLs or render uploaded HTML. External calls use fixed DNS/RDAP, Google Web Risk, Numverify, SerpAPI, AbuseIPDB, identity-provider and email-service endpoints; never target arbitrary URLs supplied in offers.
 - Do not seed realistic-looking public cases or fabricate usage, provider findings or accuracy metrics.
 
 ## Pointers

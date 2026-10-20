@@ -154,6 +154,7 @@ const GCases = guard(CasesPage);
 const GScan = guard(ScanPage);
 const GAdmin = guard(AdminPage, true);
 const GAdminScan = guard(AdminScanPage, true);
+const GIntegrations = guard(TitledIntegrations, true);
 
 function TitledResources() { useTitle('Verify & report'); return <Resources />; }
 function TitledIntegrations() { useTitle('Integrations'); return <Integrations />; }
@@ -176,7 +177,7 @@ function AppRoutes() {
               <Route path="/admin" component={GAdmin} />
               <Route path="/admin/scans/:id" component={GAdminScan} />
               <Route path="/resources" component={TitledResources} />
-              <Route path="/integrations" component={TitledIntegrations} />
+              <Route path="/integrations" component={GIntegrations} />
               <Route component={NotFound} />
             </Switch>
           </RoutedErrorBoundary>

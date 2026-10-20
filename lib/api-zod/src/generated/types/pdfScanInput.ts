@@ -5,6 +5,7 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { PdfScanInputCheckIp } from './pdfScanInputCheckIp';
 import type { PdfScanInputCheckLinks } from './pdfScanInputCheckLinks';
 import type { PdfScanInputCheckPhone } from './pdfScanInputCheckPhone';
 import type { PdfScanInputCheckSearch } from './pdfScanInputCheckSearch';
@@ -19,6 +20,9 @@ export interface PdfScanInput {
   checkLinks?: PdfScanInputCheckLinks;
   checkPhone?: PdfScanInputCheckPhone;
   checkSearch?: PdfScanInputCheckSearch;
+  checkIp?: PdfScanInputCheckIp;
+  /** @maxLength 45 */
+  ipAddress?: string;
   /** @maxLength 180 */
   searchPhrase?: string;
   /** @maxLength 40 */

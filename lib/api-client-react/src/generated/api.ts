@@ -624,6 +624,12 @@ if(pdfScanInput.checkPhone !== undefined) {
 if(pdfScanInput.checkSearch !== undefined) {
  formData.append(`checkSearch`, pdfScanInput.checkSearch);
  }
+if(pdfScanInput.checkIp !== undefined) {
+ formData.append(`checkIp`, pdfScanInput.checkIp);
+ }
+if(pdfScanInput.ipAddress !== undefined) {
+ formData.append(`ipAddress`, pdfScanInput.ipAddress);
+ }
 if(pdfScanInput.searchPhrase !== undefined) {
  formData.append(`searchPhrase`, pdfScanInput.searchPhrase);
  }

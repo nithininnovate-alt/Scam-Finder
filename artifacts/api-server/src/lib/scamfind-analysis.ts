@@ -9,6 +9,7 @@ import { enrichDomain, validDomain } from "./scamfind-enrichment";
 import { checkOfferLinks } from "./scamfind-webrisk";
 import { checkPhoneNumber } from "./scamfind-numverify";
 import { checkTextReuse } from "./scamfind-serpapi";
+import { checkIpReputation } from "./scamfind-abuseipdb";
 
 export type Scan = ReturnType<typeof GetScanResponse.parse>;
 type Input = ReturnType<typeof CreateScanBody.parse>;
@@ -79,6 +80,7 @@ export async function analyse(input: Input): Promise<Scan> {
   const urlChecks = await checkOfferLinks(links, !!input.checkLinks);
   const phoneCheck = await checkPhoneNumber(input.phoneNumber, input.phoneCountry, !!input.checkPhone);
   const textSearch = await checkTextReuse(input.searchPhrase, !!input.checkSearch, text);
+  const ipCheck = await checkIpReputation(input.ipAddress, !!input.checkIp);
   const listed = urlChecks.filter(check => check.status === "listed");
   if (listed.length) signals.push({
     id: "webrisk-listed", title: "A link is listed by Google Web Risk", category: "Link reputation", weight: 80,
@@ -98,7 +100,8 @@ export async function analyse(input: Input): Promise<Scan> {
     { name: "Mailbox ownership and company identity", status: "unavailable", detail: "Email verification, company-domain matching and company registry services are not connected." },
     { name: "Phone number validation", status: phoneCheck?.status === "valid" ? "info" : phoneCheck?.status === "invalid" ? "warning" : "unavailable",
       detail: phoneCheck?.detail ?? "Not requested. No phone number was shared with Numverify. Phone lookup requires separate explicit consent and does not verify recruiter identity." },
-    { name: "IP reputation", status: "unavailable", detail: "AbuseIPDB is not connected." },
+    { name: "Opt-in IP reputation", status: ipCheck?.status === "checked" ? "info" : "unavailable",
+      detail: ipCheck?.detail ?? "Not requested. No IP from this scan was shared with AbuseIPDB. Separate consent is required." },
     { name: "Opt-in text reuse search", status: textSearch && ["matches_found", "no_matches"].includes(textSearch.status) ? "info" : "unavailable",
       detail: textSearch?.detail ?? "Not requested. No phrase was shared with SerpAPI or Google. Separate explicit consent is required." },
     { name: "Attachment malware check", status: "unavailable", detail: attachmentNames.length ? `${attachmentNames.length} attachment(s) identified: ${attachmentNames.join(", ")}. Not executed or malware-scanned; bytes are not retained.` : "No malware-scanning service is connected. Text-only screening does not establish attachment safety." },
@@ -134,6 +137,7 @@ export async function analyse(input: Input): Promise<Scan> {
     signals, checks, checklist, links, headers, urlChecks, linkCheckRequested: !!input.checkLinks,
     phoneCheck, phoneCheckRequested: !!input.checkPhone,
     textSearch, textSearchRequested: !!input.checkSearch,
+    ipCheck, ipCheckRequested: !!input.checkIp,
     hash: digest(input.text), engineVersion: ENGINE_VERSION, durationMs: Date.now() - started,
     timeline: [{ at: now, description: "Source text received; SHA-256 recorded. Uploaded text is hashed as submitted UTF-8, not as a byte-for-byte forensic file." }, { at: new Date().toISOString(), description: `Screened with ${ENGINE_VERSION}; verdict: ${verdict}. Unavailable providers recorded.` }],
   });

@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "test:abuseipdb": "esbuild src/lib/scamfind-abuseipdb.test.ts --bundle --platform=node --format=cjs --external:pg-native --external:pino --outfile=dist/abuseipdb.test.cjs && node --test dist/abuseipdb.test.cjs",
     "test:serpapi": "esbuild src/lib/scamfind-serpapi.test.ts --bundle --platform=node --format=cjs --external:pg-native --external:pino --outfile=dist/serpapi.test.cjs && node --test dist/serpapi.test.cjs",
     "test:numverify": "esbuild src/lib/scamfind-numverify.test.ts --bundle --platform=node --format=cjs --external:pg-native --external:pino --outfile=dist/numverify.test.cjs && node --test dist/numverify.test.cjs",
     "test:email-events": "esbuild src/lib/scamfind-email-events.test.ts --bundle --platform=node --format=cjs --external:@clerk/* --external:@replit/* --external:svix --external:pg-native --external:pino --outfile=dist/email-events.test.cjs && node --test dist/email-events.test.cjs",
@@ -26,6 +27,7 @@
     "express-rate-limit": "^8.7.1",
     "html-to-text": "^10.0.1",
     "http-proxy-middleware": "^4.2.0",
+    "ipaddr.js": "^2.5.0",
     "mailparser": "^3.9.46",
     "multer": "^2.4.0",
     "pdfkit": "^0.20.2",

@@ -305,7 +305,7 @@ paths:
       tags: [scamfind]
       responses:
         "200":
-          description: Honest capability availability
+          description: Honest capability availability, administrators only
           content:
             application/json:
               schema: {type: array, items: {$ref: "#/components/schemas/Provider"}}
@@ -355,6 +355,8 @@ components:
         checkLinks: {type: string, enum: ["true", "false"]}
         checkPhone: {type: string, enum: ["true", "false"]}
         checkSearch: {type: string, enum: ["true", "false"]}
+        checkIp: {type: string, enum: ["true", "false"]}
+        ipAddress: {type: string, maxLength: 45}
         searchPhrase: {type: string, maxLength: 180}
         phoneNumber: {type: string, maxLength: 40}
         phoneCountry: {type: string, pattern: "^[A-Za-z]{2}$"}
@@ -456,10 +458,27 @@ components:
         checkLinks: {type: boolean, default: false}
         checkPhone: {type: boolean, default: false}
         checkSearch: {type: boolean, default: false}
+        checkIp: {type: boolean, default: false}
+        ipAddress: {type: string, maxLength: 45}
         searchPhrase: {type: string, maxLength: 180}
         phoneNumber: {type: string, maxLength: 40}
         phoneCountry: {type: string, pattern: "^[A-Za-z]{2}$"}
         source: {type: string, enum: [paste, upload, batch], default: paste}
+    IpCheck:
+      type: object
+      required: [ip, status, detail, checkedAt, lookbackDays]
+      properties:
+        ip: {type: string}
+        status: {type: string, enum: [checked, unavailable, skipped]}
+        detail: {type: string}
+        checkedAt: {type: string}
+        lookbackDays: {type: integer}
+        abuseConfidenceScore: {type: integer, minimum: 0, maximum: 100}
+        totalReports: {type: integer, minimum: 0}
+        countryCode: {type: string}
+        isp: {type: string}
+        usageType: {type: string}
+        lastReportedAt: {type: string}
     TextSearchHit:
       type: object
       required: [title, url, snippet]
@@ -548,6 +567,8 @@ components:
         linkCheckRequested: {type: boolean}
         phoneCheckRequested: {type: boolean}
         textSearchRequested: {type: boolean}
+        ipCheckRequested: {type: boolean}
+        ipCheck: {$ref: "#/components/schemas/IpCheck"}
         textSearch: {$ref: "#/components/schemas/TextSearch"}
         phoneCheck: {$ref: "#/components/schemas/PhoneCheck"}
         urlChecks: {type: array, items: {$ref: "#/components/schemas/UrlCheck"}}

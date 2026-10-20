@@ -6,6 +6,7 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { Check } from './check';
+import type { IpCheck } from './ipCheck';
 import type { PhoneCheck } from './phoneCheck';
 import type { ScanPdfSource } from './scanPdfSource';
 import type { ScanStatus } from './scanStatus';
@@ -42,6 +43,8 @@ export interface Scan {
   linkCheckRequested?: boolean;
   phoneCheckRequested?: boolean;
   textSearchRequested?: boolean;
+  ipCheckRequested?: boolean;
+  ipCheck?: IpCheck;
   textSearch?: TextSearch;
   phoneCheck?: PhoneCheck;
   urlChecks?: UrlCheck[];

@@ -17,7 +17,7 @@ export default function Integrations() {
     <>
       <PageHeader eyebrow="What's connected" title="Honest about what runs today" />
       <p className="-mt-4 mb-8 max-w-2xl text-sm text-muted-foreground rise">
-        Every check starts with ScamFind's built-in rules. Google Web Risk link checks, Numverify phone checks and SerpAPI phrase searches each require separate consent. Capabilities marked "not connected" or "error" are not used in any result, and show as unavailable in reports with reduced confidence.
+        Every check starts with ScamFind's built-in rules. Google Web Risk link checks, Numverify phone checks, SerpAPI phrase searches and AbuseIPDB IP checks each require separate consent. Capabilities marked "not connected" or "error" are not used in any result, and show as unavailable in reports with reduced confidence.
       </p>
       {signedIn && account && (
         <div className="mb-12 space-y-6">

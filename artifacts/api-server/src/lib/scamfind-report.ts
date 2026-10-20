@@ -31,6 +31,15 @@ export function sendReport(scan: Scan, res: Response) {
   }
   title("Check coverage");
   for (const check of scan.checks) line(`${check.name} [${check.status}]\n${check.detail}`);
+  if (scan.textSearchRequested !== undefined || scan.textSearch) {
+    title("Opt-in phrase reuse search");
+    if (scan.textSearch) {
+      const search = scan.textSearch;
+      line(`[${search.status}] ${search.phrase ? `"${search.phrase}"` : ""}\n${search.detail}\nChecked (UTC): ${search.checkedAt}`);
+      for (const hit of search.results) line(`${hit.title}\n${hit.url.replace(/^http/i, "hxxp").replace(/\./g, "[.]")}\n${hit.snippet}`);
+    } else line("Not requested. No phrase was shared with SerpAPI or Google.");
+    line("Source: Google results via SerpAPI. Search results may be incomplete or inexact and do not prove fraud or safety. Result pages were not visited. This check does not change the risk score.");
+  }
   if (scan.phoneCheckRequested !== undefined || scan.phoneCheck) {
     title("Phone number validation");
     if (scan.phoneCheck) {

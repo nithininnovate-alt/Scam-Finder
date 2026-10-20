@@ -8,6 +8,7 @@ import { requireAdmin } from "../middlewares/scamfind-account";
 import { emailSettings, emailAvailability, verifiedRecipient, recentDeliveries, processEmailQueue } from "../lib/scamfind-email";
 import { probeWebRisk, webRiskHealth } from "../lib/scamfind-webrisk";
 import { probeNumverify } from "../lib/scamfind-numverify";
+import { probeSerpApi } from "../lib/scamfind-serpapi";
 import { logger } from "../lib/logger";
 
 const router = Router();
@@ -65,7 +66,7 @@ admin.patch("/", async (req, res): Promise<void> => {
   res.json(await settingsResponse());
 });
 admin.post("/check", adminActions, async (_req, res): Promise<void> => {
-  await Promise.all([probeWebRisk(true), probeNumverify(true)]); res.json(await settingsResponse());
+  await Promise.all([probeWebRisk(true), probeNumverify(true), probeSerpApi(true)]); res.json(await settingsResponse());
 });
 admin.post("/test-email", adminActions, async (_req, res): Promise<void> => {
   const settings = await emailSettings();

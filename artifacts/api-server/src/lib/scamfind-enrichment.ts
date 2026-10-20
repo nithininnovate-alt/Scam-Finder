@@ -61,7 +61,6 @@ const providers = [
     ["AbuseIPDB", "Received-IP reputation"],
     ["ZeroBounce", "Mailbox verification"],
     ["Hunter", "Company-domain matching"],
-    ["SerpAPI", "Exact-text reuse search"],
     ["OpenCorporates", "Company registry verification"],
     ["Have I Been Pwned", "Breach intelligence"],
     ["Twilio Lookup", "Phone intelligence"],
@@ -73,11 +72,14 @@ const providers = [
 export async function getProviders() {
   const { probeNumverify } = await import("./scamfind-numverify");
   const phone = await probeNumverify();
+  const { probeSerpApi } = await import("./scamfind-serpapi");
+  const search = await probeSerpApi();
   const [{ webRiskHealth }, { emailAvailability }] = await Promise.all([import("./scamfind-webrisk"), import("./scamfind-email")]);
   const risk = webRiskHealth();
   const mail = await emailAvailability();
   return [
     ...providers,
+    { name: "SerpAPI", capability: "Opt-in phrase reuse search", status: search.status, description: `${search.message} Only a selected short phrase is shared with SerpAPI and Google; full offers and PDFs are not sent. Up to 5 results; 25 searches/day application safety limit. Matches do not prove fraud, and no matches do not imply safety.` },
     { name: "Numverify", capability: "Opt-in phone number validation", status: phone.status, description: `${phone.message} One explicitly selected number per scan; 100 lookups per day application safety limit. Carrier and line type may be unavailable. No full offers or documents are sent.` },
     { name: "Google Web Risk", capability: "Opt-in malicious-link reputation", status: risk.status, description: `${risk.message} Up to 5 public URLs per scan; query strings and fragments are removed. Not-listed is not proof of safety.` },
     { name: "Resend", capability: "Opt-in case update emails", status: mail.status, description: mail.message },

@@ -11,6 +11,7 @@ import type { ScanPdfSource } from './scanPdfSource';
 import type { ScanStatus } from './scanStatus';
 import type { ScanVerdict } from './scanVerdict';
 import type { Signal } from './signal';
+import type { TextSearch } from './textSearch';
 import type { TimelineEvent } from './timelineEvent';
 import type { UrlCheck } from './urlCheck';
 
@@ -40,6 +41,8 @@ export interface Scan {
   timeline: TimelineEvent[];
   linkCheckRequested?: boolean;
   phoneCheckRequested?: boolean;
+  textSearchRequested?: boolean;
+  textSearch?: TextSearch;
   phoneCheck?: PhoneCheck;
   urlChecks?: UrlCheck[];
   pdfSource?: ScanPdfSource;

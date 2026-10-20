@@ -40,6 +40,14 @@ export const PdfScanInputCheckPhone = {
   false: 'false',
 } as const;
 
+export type PdfScanInputCheckSearch = typeof PdfScanInputCheckSearch[keyof typeof PdfScanInputCheckSearch];
+
+
+export const PdfScanInputCheckSearch = {
+  true: 'true',
+  false: 'false',
+} as const;
+
 /**
  * Optional per-document local English OCR. Defaults to false. No document bytes are sent to an external OCR service. Independent of link-check consent.
  */
@@ -59,6 +67,9 @@ export interface PdfScanInput {
   title?: string;
   checkLinks?: PdfScanInputCheckLinks;
   checkPhone?: PdfScanInputCheckPhone;
+  checkSearch?: PdfScanInputCheckSearch;
+  /** @maxLength 180 */
+  searchPhrase?: string;
   /** @maxLength 40 */
   phoneNumber?: string;
   /** @pattern ^[A-Za-z]{2}$ */
@@ -252,6 +263,30 @@ export interface TimelineEvent {
   description: string;
 }
 
+export type TextSearchStatus = typeof TextSearchStatus[keyof typeof TextSearchStatus];
+
+
+export const TextSearchStatus = {
+  matches_found: 'matches_found',
+  no_matches: 'no_matches',
+  unavailable: 'unavailable',
+  skipped: 'skipped',
+} as const;
+
+export interface TextSearchHit {
+  title: string;
+  url: string;
+  snippet: string;
+}
+
+export interface TextSearch {
+  phrase: string;
+  status: TextSearchStatus;
+  detail: string;
+  checkedAt: string;
+  results: TextSearchHit[];
+}
+
 export type PhoneCheckStatus = typeof PhoneCheckStatus[keyof typeof PhoneCheckStatus];
 
 
@@ -306,6 +341,8 @@ export interface Scan {
   timeline: TimelineEvent[];
   linkCheckRequested?: boolean;
   phoneCheckRequested?: boolean;
+  textSearchRequested?: boolean;
+  textSearch?: TextSearch;
   phoneCheck?: PhoneCheck;
   urlChecks?: UrlCheck[];
   pdfSource?: ScanPdfSource;
@@ -351,6 +388,9 @@ export interface ScanInput {
   fileName?: string;
   checkLinks?: boolean;
   checkPhone?: boolean;
+  checkSearch?: boolean;
+  /** @maxLength 180 */
+  searchPhrase?: string;
   /** @maxLength 40 */
   phoneNumber?: string;
   /** @pattern ^[A-Za-z]{2}$ */

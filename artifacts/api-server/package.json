@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "test:serpapi": "esbuild src/lib/scamfind-serpapi.test.ts --bundle --platform=node --format=cjs --external:pg-native --external:pino --outfile=dist/serpapi.test.cjs && node --test dist/serpapi.test.cjs",
     "test:numverify": "esbuild src/lib/scamfind-numverify.test.ts --bundle --platform=node --format=cjs --external:pg-native --external:pino --outfile=dist/numverify.test.cjs && node --test dist/numverify.test.cjs",
     "test:email-events": "esbuild src/lib/scamfind-email-events.test.ts --bundle --platform=node --format=cjs --external:@clerk/* --external:@replit/* --external:svix --external:pg-native --external:pino --outfile=dist/email-events.test.cjs && node --test dist/email-events.test.cjs",
     "dev": "export NODE_ENV=development && pnpm run build && pnpm run start",

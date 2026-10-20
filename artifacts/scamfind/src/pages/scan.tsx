@@ -29,6 +29,7 @@ import { download, errorMessage, shortDate, statusLabel, utc, verdictPlain } fro
 import { cn } from '@/lib/utils';
 import { PdfSourceNote, UrlChecksPanel, defang } from '@/components/report-extras';
 import { PhoneCheckPanel } from '@/components/phone-check';
+import { TextSearchPanel } from '@/components/text-search';
 
 const CHECK_ICON = {
   passed: { icon: CheckCircle2, cls: 'text-safe', label: 'Passed' },
@@ -345,6 +346,9 @@ export function ReportBody({ scan, caseSlot, caseTitle = 'Case notes' }: { scan:
 
       {(scan.phoneCheckRequested !== undefined || scan.phoneCheck) && (
         <Section n="PHONE" title="Phone number check"><PhoneCheckPanel scan={scan} /></Section>
+      )}
+      {(scan.textSearchRequested !== undefined || scan.textSearch) && (
+        <Section n="SEARCH" title="Phrase reuse search"><TextSearchPanel scan={scan} /></Section>
       )}
       {(scan.links.length > 0 || (scan.urlChecks?.length ?? 0) > 0 || scan.linkCheckRequested) && (
         <Section n="06" title="Links found in the message">

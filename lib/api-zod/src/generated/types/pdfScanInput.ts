@@ -7,6 +7,7 @@
  */
 import type { PdfScanInputCheckLinks } from './pdfScanInputCheckLinks';
 import type { PdfScanInputCheckPhone } from './pdfScanInputCheckPhone';
+import type { PdfScanInputCheckSearch } from './pdfScanInputCheckSearch';
 import type { PdfScanInputLocalOcr } from './pdfScanInputLocalOcr';
 
 export interface PdfScanInput {
@@ -17,6 +18,9 @@ export interface PdfScanInput {
   title?: string;
   checkLinks?: PdfScanInputCheckLinks;
   checkPhone?: PdfScanInputCheckPhone;
+  checkSearch?: PdfScanInputCheckSearch;
+  /** @maxLength 180 */
+  searchPhrase?: string;
   /** @maxLength 40 */
   phoneNumber?: string;
   /** @pattern ^[A-Za-z]{2}$ */

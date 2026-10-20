@@ -62,7 +62,9 @@ A job-offer screening web application with explainable risk indicators, evidence
 
 ## Gotchas
 
-- Do not fetch offer URLs or render uploaded HTML. External calls use fixed DNS/RDAP, Google Web Risk, identity-provider and email-service endpoints; never target arbitrary URLs supplied in offers.
+- SerpAPI uses server-only `SERPAPI_API_KEY` and HTTPS. A free account probe verifies access without transmitting offer content. Phrase reuse searches need separate explicit consent and a manually reviewed short phrase (or a reviewed `search_phrase` CSV column); full offers, uploaded files, numeric identifiers, email and web addresses are not submitted. Results are saved as encrypted case snapshots and exported to PDF; they do not affect the risk score. Daily UTC safety cap: 25 search requests; 10-minute bounded result cache. Run `pnpm --filter @workspace/api-server test:serpapi` for mocked consent, quota, caching and failure checks.
+
+- Do not fetch offer URLs or render uploaded HTML. External calls use fixed DNS/RDAP, Google Web Risk, Numverify, SerpAPI, identity-provider and email-service endpoints; never target arbitrary URLs supplied in offers.
 - Do not seed realistic-looking public cases or fabricate usage, provider findings or accuracy metrics.
 
 ## Pointers

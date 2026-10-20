@@ -24,6 +24,7 @@ import { MAX_CHARS, MAX_FILE, download, errorMessage, parseCsv, relative, scansT
 import { cn } from '@/lib/utils';
 import { LinkConsent } from '@/components/link-consent';
 import { PhoneConsent } from '@/components/phone-consent';
+import { TextSearchConsent } from '@/components/text-search';
 
 const MAX_PDF = 5 * 1024 * 1024;
 
@@ -87,6 +88,8 @@ function SingleForm() {
   const [checkPhone, setCheckPhone] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState('');
   const [phoneCountry, setPhoneCountry] = useState('');
+  const [checkSearch, setCheckSearch] = useState(false);
+  const [searchPhrase, setSearchPhrase] = useState('');
   const [checkLinks, setCheckLinks] = useState(false);
   const [text, setText] = useState('');
   const [sender, setSender] = useState('');
@@ -154,6 +157,8 @@ function SingleForm() {
   }
 
   function clear() {
+    setCheckSearch(false);
+    setSearchPhrase('');
     setCheckPhone(false);
     setPhoneNumber('');
     setPhoneCountry('');
@@ -177,12 +182,14 @@ function SingleForm() {
     try {
       const scan = pdfFile
         ? await uploadPdf.mutateAsync({ data: { file: pdfFile, sender: sender.trim() || undefined, title: title.trim() || undefined, checkLinks: checkLinks ? 'true' : 'false', localOcr: localOcr ? 'true' : 'false',
-          checkPhone: checkPhone ? 'true' : 'false', phoneNumber: checkPhone ? phoneNumber.trim() : undefined, phoneCountry: checkPhone ? phoneCountry || undefined : undefined } })
+          checkPhone: checkPhone ? 'true' : 'false', phoneNumber: checkPhone ? phoneNumber.trim() : undefined, phoneCountry: checkPhone ? phoneCountry || undefined : undefined,
+          checkSearch: checkSearch ? 'true' : 'false', searchPhrase: checkSearch ? searchPhrase.trim() || undefined : undefined } })
         : await createScan.mutateAsync({
         data: {
           text,
           checkLinks,
           checkPhone,
+          checkSearch, searchPhrase: checkSearch ? searchPhrase.trim() || undefined : undefined,
           phoneNumber: checkPhone ? phoneNumber.trim() : undefined,
           phoneCountry: checkPhone ? phoneCountry || undefined : undefined,
           sender: sender.trim() || undefined,
@@ -312,6 +319,7 @@ function SingleForm() {
 
       <LinkConsent checked={checkLinks} onChange={setCheckLinks} disabled={pending} />
       <PhoneConsent checked={checkPhone} onChange={setCheckPhone} number={phoneNumber} country={phoneCountry} onNumberChange={setPhoneNumber} onCountryChange={setPhoneCountry} disabled={pending} />
+      <TextSearchConsent checked={checkSearch} onChange={setCheckSearch} phrase={searchPhrase} onPhraseChange={setSearchPhrase} disabled={pending} />
 
       {err && <div className="rounded-lg bg-alert-soft px-3 py-2 text-sm text-alert rise" data-testid="text-form-error">{err}</div>}
       {over && <div className="text-sm text-alert">That is over 200,000 characters. Trim it to the offer itself.</div>}
@@ -342,6 +350,7 @@ function BatchForm() {
   const [running, setRunning] = useState(false);
   const [checkLinks, setCheckLinks] = useState(false);
   const [checkPhone, setCheckPhone] = useState(false);
+  const [checkSearch, setCheckSearch] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const ref = useRef<HTMLInputElement>(null);
 
@@ -356,6 +365,7 @@ function BatchForm() {
     const si = head.indexOf('sender');
     const li = head.indexOf('title');
     const pi = head.indexOf('phone');
+    const qi = head.indexOf('search_phrase');
     const ci = head.indexOf('country_code');
     const data = parsed.slice(1);
     const init: RowResult[] = data.map((r, i) => ({ row: i + 2, title: (li >= 0 ? r[li] : '') || `Row ${i + 2}`, status: 'pending' }));
@@ -372,7 +382,8 @@ function BatchForm() {
           const scan = await createScan.mutateAsync({
             data: { text, sender: (si >= 0 ? r[si]?.trim() : '') || undefined, title: (li >= 0 ? r[li]?.trim() : '') || undefined, source: 'batch', checkLinks, checkPhone,
               phoneNumber: checkPhone && pi >= 0 ? r[pi]?.trim() || undefined : undefined,
-              phoneCountry: checkPhone && ci >= 0 ? r[ci]?.trim().toUpperCase() || undefined : undefined },
+              phoneCountry: checkPhone && ci >= 0 ? r[ci]?.trim().toUpperCase() || undefined : undefined,
+              checkSearch, searchPhrase: checkSearch && qi >= 0 ? r[qi]?.trim() || undefined : undefined },
           });
           res = { ...init[i], status: 'ok', scan };
         } catch (e) {
@@ -410,6 +421,7 @@ function BatchForm() {
       </div>
       <LinkConsent id="check-links-batch" checked={checkLinks} onChange={setCheckLinks} disabled={running} />
       <PhoneConsent batch checked={checkPhone} onChange={setCheckPhone} disabled={running} />
+      <TextSearchConsent batch checked={checkSearch} onChange={setCheckSearch} disabled={running} />
       {err && <div className="rounded-lg bg-alert-soft px-3 py-2 text-sm text-alert">{err}</div>}
       {rows.length > 0 && (
         <div className="space-y-3 rise">

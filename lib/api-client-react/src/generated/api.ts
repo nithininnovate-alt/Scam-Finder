@@ -621,6 +621,12 @@ if(pdfScanInput.checkLinks !== undefined) {
 if(pdfScanInput.checkPhone !== undefined) {
  formData.append(`checkPhone`, pdfScanInput.checkPhone);
  }
+if(pdfScanInput.checkSearch !== undefined) {
+ formData.append(`checkSearch`, pdfScanInput.checkSearch);
+ }
+if(pdfScanInput.searchPhrase !== undefined) {
+ formData.append(`searchPhrase`, pdfScanInput.searchPhrase);
+ }
 if(pdfScanInput.phoneNumber !== undefined) {
  formData.append(`phoneNumber`, pdfScanInput.phoneNumber);
  }

@@ -1,6 +1,6 @@
 ---
 name: Provider privacy boundaries
-description: Consent scope when extending URL, document, image or email integrations.
+description: Consent boundaries for document, link, phone, search and email providers.
 ---
 
 Treat consent to link-reputation lookup as narrower than consent to send a whole offer, PDF or image to a third-party service. A connected service is not permission to transmit additional content.
@@ -14,6 +14,12 @@ Phone-number validation needs a separate opt-in and an explicitly selected numbe
 **Why:** Offers can contain identity, bank and reference numbers that look like telephone numbers. Number validity and carrier metadata do not establish recruiter identity or fraud.
 
 **How to apply:** Share only the selected phone number and its country context. Keep this consent independent from link lookup and OCR, and do not turn a valid number into a safety claim.
+
+Search-engine text reuse needs separate opt-in and a user-reviewed short phrase; never automatically send extracted offer text as a search query.
+
+**Why:** A connected search API can disclose confidential offer contents to both the API provider and a search engine. Search matches alone do not establish fraud.
+
+**How to apply:** Share only the explicitly selected phrase. Block common numeric identifiers, email and web addresses; warn users to remove names and confidential details. Keep search results separate from the risk score and disclose search-coverage limitations.
 
 Keep Resend's sending-only authorization unchanged when adding delivery tracking.
 Webhook management and its verification configuration require separate owner

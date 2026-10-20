@@ -159,6 +159,8 @@ export const uploadPdfScanBodySenderMax = 320;
 
 export const uploadPdfScanBodyTitleMax = 160;
 
+export const uploadPdfScanBodySearchPhraseMax = 180;
+
 export const uploadPdfScanBodyPhoneNumberMax = 40;
 
 export const uploadPdfScanBodyPhoneCountryRegExp = new RegExp('^[A-Za-z]{2}$');
@@ -170,6 +172,8 @@ export const UploadPdfScanBody = zod.object({
   "title": zod.string().max(uploadPdfScanBodyTitleMax).optional(),
   "checkLinks": zod.enum(['true', 'false']).optional(),
   "checkPhone": zod.enum(['true', 'false']).optional(),
+  "checkSearch": zod.enum(['true', 'false']).optional(),
+  "searchPhrase": zod.string().max(uploadPdfScanBodySearchPhraseMax).optional(),
   "phoneNumber": zod.string().max(uploadPdfScanBodyPhoneNumberMax).optional(),
   "phoneCountry": zod.string().regex(uploadPdfScanBodyPhoneCountryRegExp).optional(),
   "localOcr": zod.enum(['true', 'false']).optional().describe('Optional per-document local English OCR. Defaults to false. No document bytes are sent to an external OCR service. Independent of link-check consent.')
@@ -215,6 +219,18 @@ export const UploadPdfScanResponse = zod.object({
 })),
   "linkCheckRequested": zod.boolean().optional(),
   "phoneCheckRequested": zod.boolean().optional(),
+  "textSearchRequested": zod.boolean().optional(),
+  "textSearch": zod.object({
+  "phrase": zod.string(),
+  "status": zod.enum(['matches_found', 'no_matches', 'unavailable', 'skipped']),
+  "detail": zod.string(),
+  "checkedAt": zod.string(),
+  "results": zod.array(zod.object({
+  "title": zod.string(),
+  "url": zod.string(),
+  "snippet": zod.string()
+}))
+}).optional(),
   "phoneCheck": zod.object({
   "number": zod.string(),
   "status": zod.enum(['valid', 'invalid', 'unavailable', 'skipped']),
@@ -311,6 +327,18 @@ export const GetAdminSummaryResponse = zod.object({
 })),
   "linkCheckRequested": zod.boolean().optional(),
   "phoneCheckRequested": zod.boolean().optional(),
+  "textSearchRequested": zod.boolean().optional(),
+  "textSearch": zod.object({
+  "phrase": zod.string(),
+  "status": zod.enum(['matches_found', 'no_matches', 'unavailable', 'skipped']),
+  "detail": zod.string(),
+  "checkedAt": zod.string(),
+  "results": zod.array(zod.object({
+  "title": zod.string(),
+  "url": zod.string(),
+  "snippet": zod.string()
+}))
+}).optional(),
   "phoneCheck": zod.object({
   "number": zod.string(),
   "status": zod.enum(['valid', 'invalid', 'unavailable', 'skipped']),
@@ -393,6 +421,18 @@ export const ListAdminScansResponseItem = zod.object({
 })),
   "linkCheckRequested": zod.boolean().optional(),
   "phoneCheckRequested": zod.boolean().optional(),
+  "textSearchRequested": zod.boolean().optional(),
+  "textSearch": zod.object({
+  "phrase": zod.string(),
+  "status": zod.enum(['matches_found', 'no_matches', 'unavailable', 'skipped']),
+  "detail": zod.string(),
+  "checkedAt": zod.string(),
+  "results": zod.array(zod.object({
+  "title": zod.string(),
+  "url": zod.string(),
+  "snippet": zod.string()
+}))
+}).optional(),
   "phoneCheck": zod.object({
   "number": zod.string(),
   "status": zod.enum(['valid', 'invalid', 'unavailable', 'skipped']),
@@ -465,6 +505,18 @@ export const GetAdminScanResponse = zod.object({
 })),
   "linkCheckRequested": zod.boolean().optional(),
   "phoneCheckRequested": zod.boolean().optional(),
+  "textSearchRequested": zod.boolean().optional(),
+  "textSearch": zod.object({
+  "phrase": zod.string(),
+  "status": zod.enum(['matches_found', 'no_matches', 'unavailable', 'skipped']),
+  "detail": zod.string(),
+  "checkedAt": zod.string(),
+  "results": zod.array(zod.object({
+  "title": zod.string(),
+  "url": zod.string(),
+  "snippet": zod.string()
+}))
+}).optional(),
   "phoneCheck": zod.object({
   "number": zod.string(),
   "status": zod.enum(['valid', 'invalid', 'unavailable', 'skipped']),
@@ -545,6 +597,18 @@ export const UpdateAdminScanResponse = zod.object({
 })),
   "linkCheckRequested": zod.boolean().optional(),
   "phoneCheckRequested": zod.boolean().optional(),
+  "textSearchRequested": zod.boolean().optional(),
+  "textSearch": zod.object({
+  "phrase": zod.string(),
+  "status": zod.enum(['matches_found', 'no_matches', 'unavailable', 'skipped']),
+  "detail": zod.string(),
+  "checkedAt": zod.string(),
+  "results": zod.array(zod.object({
+  "title": zod.string(),
+  "url": zod.string(),
+  "snippet": zod.string()
+}))
+}).optional(),
   "phoneCheck": zod.object({
   "number": zod.string(),
   "status": zod.enum(['valid', 'invalid', 'unavailable', 'skipped']),
@@ -618,6 +682,18 @@ export const ListScansResponseItem = zod.object({
 })),
   "linkCheckRequested": zod.boolean().optional(),
   "phoneCheckRequested": zod.boolean().optional(),
+  "textSearchRequested": zod.boolean().optional(),
+  "textSearch": zod.object({
+  "phrase": zod.string(),
+  "status": zod.enum(['matches_found', 'no_matches', 'unavailable', 'skipped']),
+  "detail": zod.string(),
+  "checkedAt": zod.string(),
+  "results": zod.array(zod.object({
+  "title": zod.string(),
+  "url": zod.string(),
+  "snippet": zod.string()
+}))
+}).optional(),
   "phoneCheck": zod.object({
   "number": zod.string(),
   "status": zod.enum(['valid', 'invalid', 'unavailable', 'skipped']),
@@ -655,6 +731,9 @@ export const createScanBodyFileNameMax = 255;
 
 export const createScanBodyCheckLinksDefault = false;
 export const createScanBodyCheckPhoneDefault = false;
+export const createScanBodyCheckSearchDefault = false;
+export const createScanBodySearchPhraseMax = 180;
+
 export const createScanBodyPhoneNumberMax = 40;
 
 export const createScanBodyPhoneCountryRegExp = new RegExp('^[A-Za-z]{2}$');
@@ -667,6 +746,8 @@ export const CreateScanBody = zod.object({
   "fileName": zod.string().max(createScanBodyFileNameMax).optional(),
   "checkLinks": zod.boolean().default(createScanBodyCheckLinksDefault),
   "checkPhone": zod.boolean().default(createScanBodyCheckPhoneDefault),
+  "checkSearch": zod.boolean().default(createScanBodyCheckSearchDefault),
+  "searchPhrase": zod.string().max(createScanBodySearchPhraseMax).optional(),
   "phoneNumber": zod.string().max(createScanBodyPhoneNumberMax).optional(),
   "phoneCountry": zod.string().regex(createScanBodyPhoneCountryRegExp).optional(),
   "source": zod.enum(['paste', 'upload', 'batch']).default(createScanBodySourceDefault)
@@ -712,6 +793,18 @@ export const CreateScanResponse = zod.object({
 })),
   "linkCheckRequested": zod.boolean().optional(),
   "phoneCheckRequested": zod.boolean().optional(),
+  "textSearchRequested": zod.boolean().optional(),
+  "textSearch": zod.object({
+  "phrase": zod.string(),
+  "status": zod.enum(['matches_found', 'no_matches', 'unavailable', 'skipped']),
+  "detail": zod.string(),
+  "checkedAt": zod.string(),
+  "results": zod.array(zod.object({
+  "title": zod.string(),
+  "url": zod.string(),
+  "snippet": zod.string()
+}))
+}).optional(),
   "phoneCheck": zod.object({
   "number": zod.string(),
   "status": zod.enum(['valid', 'invalid', 'unavailable', 'skipped']),
@@ -782,6 +875,18 @@ export const GetScanResponse = zod.object({
 })),
   "linkCheckRequested": zod.boolean().optional(),
   "phoneCheckRequested": zod.boolean().optional(),
+  "textSearchRequested": zod.boolean().optional(),
+  "textSearch": zod.object({
+  "phrase": zod.string(),
+  "status": zod.enum(['matches_found', 'no_matches', 'unavailable', 'skipped']),
+  "detail": zod.string(),
+  "checkedAt": zod.string(),
+  "results": zod.array(zod.object({
+  "title": zod.string(),
+  "url": zod.string(),
+  "snippet": zod.string()
+}))
+}).optional(),
   "phoneCheck": zod.object({
   "number": zod.string(),
   "status": zod.enum(['valid', 'invalid', 'unavailable', 'skipped']),
@@ -862,6 +967,18 @@ export const UpdateScanResponse = zod.object({
 })),
   "linkCheckRequested": zod.boolean().optional(),
   "phoneCheckRequested": zod.boolean().optional(),
+  "textSearchRequested": zod.boolean().optional(),
+  "textSearch": zod.object({
+  "phrase": zod.string(),
+  "status": zod.enum(['matches_found', 'no_matches', 'unavailable', 'skipped']),
+  "detail": zod.string(),
+  "checkedAt": zod.string(),
+  "results": zod.array(zod.object({
+  "title": zod.string(),
+  "url": zod.string(),
+  "snippet": zod.string()
+}))
+}).optional(),
   "phoneCheck": zod.object({
   "number": zod.string(),
   "status": zod.enum(['valid', 'invalid', 'unavailable', 'skipped']),
@@ -948,6 +1065,18 @@ export const GetSummaryResponse = zod.object({
 })),
   "linkCheckRequested": zod.boolean().optional(),
   "phoneCheckRequested": zod.boolean().optional(),
+  "textSearchRequested": zod.boolean().optional(),
+  "textSearch": zod.object({
+  "phrase": zod.string(),
+  "status": zod.enum(['matches_found', 'no_matches', 'unavailable', 'skipped']),
+  "detail": zod.string(),
+  "checkedAt": zod.string(),
+  "results": zod.array(zod.object({
+  "title": zod.string(),
+  "url": zod.string(),
+  "snippet": zod.string()
+}))
+}).optional(),
   "phoneCheck": zod.object({
   "number": zod.string(),
   "status": zod.enum(['valid', 'invalid', 'unavailable', 'skipped']),

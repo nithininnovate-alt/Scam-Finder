@@ -21,6 +21,9 @@ export interface ScanInput {
   fileName?: string;
   checkLinks?: boolean;
   checkPhone?: boolean;
+  checkSearch?: boolean;
+  /** @maxLength 180 */
+  searchPhrase?: string;
   /** @maxLength 40 */
   phoneNumber?: string;
   /** @pattern ^[A-Za-z]{2}$ */

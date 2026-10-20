@@ -24,6 +24,30 @@ export interface NotificationPreferencesInput {
   enabled: boolean;
 }
 
+export type PdfPreviewInputLocalOcr = typeof PdfPreviewInputLocalOcr[keyof typeof PdfPreviewInputLocalOcr];
+
+
+export const PdfPreviewInputLocalOcr = {
+  true: 'true',
+  false: 'false',
+} as const;
+
+export interface PdfPreviewInput {
+  file: Blob;
+  localOcr?: PdfPreviewInputLocalOcr;
+}
+
+export interface PdfTextPreview {
+  /** @maxLength 200000 */
+  text: string;
+  /**
+     * @minimum 1
+     * @maximum 20
+     */
+  pages: number;
+  warning: string;
+}
+
 export type PdfScanInputCheckLinks = typeof PdfScanInputCheckLinks[keyof typeof PdfScanInputCheckLinks];
 
 

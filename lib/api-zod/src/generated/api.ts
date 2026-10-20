@@ -266,6 +266,27 @@ export const SendTestEmailResponse = zod.object({
 })
 
 
+/**
+ * Extract text within the app for review only. Does not save a scan or call external lookup providers.
+ */
+export const PreviewOfferPdfBody = zod.object({
+  "file": zod.instanceof(Blob),
+  "localOcr": zod.enum(['true', 'false']).optional()
+})
+
+export const previewOfferPdfResponseTextMax = 200000;
+
+export const previewOfferPdfResponsePagesMax = 20;
+
+
+
+export const PreviewOfferPdfResponse = zod.object({
+  "text": zod.string().max(previewOfferPdfResponseTextMax),
+  "pages": zod.number().int().min(1).max(previewOfferPdfResponsePagesMax),
+  "warning": zod.string()
+})
+
+
 export const uploadPdfScanBodySenderMax = 320;
 
 export const uploadPdfScanBodyTitleMax = 160;

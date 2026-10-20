@@ -1,10 +1,11 @@
 import { useTitle } from '@/lib/auth';
-import { useRef, useState, type DragEvent } from 'react';
+import { useEffect, useMemo, useRef, useState, type DragEvent } from 'react';
 import { Link, useLocation } from 'wouter';
 import { useQueryClient } from '@tanstack/react-query';
 import {
   useCreateScan,
   useUploadPdfScan,
+  usePreviewOfferPdf,
   useGetSummary,
   getGetSummaryQueryKey,
   getListScansQueryKey,
@@ -26,6 +27,7 @@ import { LinkConsent } from '@/components/link-consent';
 import { PhoneConsent } from '@/components/phone-consent';
 import { TextSearchConsent } from '@/components/text-search';
 import { IpConsent } from '@/components/ip-check';
+import { extractPhoneCandidates } from '@/lib/phone-candidates';
 
 const MAX_PDF = 5 * 1024 * 1024;
 
@@ -84,7 +86,9 @@ function SingleForm() {
   const { toast } = useToast();
   const createScan = useCreateScan();
   const uploadPdf = useUploadPdfScan();
+  const previewPdf = usePreviewOfferPdf();
   const [pdfFile, setPdfFile] = useState<File | null>(null);
+  const [pdfPreview, setPdfPreview] = useState<{ file: File; ocr: boolean; text: string; warning: string } | null>(null);
   const [localOcr, setLocalOcr] = useState(false);
   const [checkPhone, setCheckPhone] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState('');
@@ -105,8 +109,30 @@ function SingleForm() {
   const fileRef = useRef<HTMLInputElement>(null);
 
   const over = text.length > MAX_CHARS;
-  const pending = createScan.isPending || uploadPdf.isPending;
+  const pending = createScan.isPending || uploadPdf.isPending || previewPdf.isPending;
   const canSubmit = (pdfFile ? true : text.trim().length > 0 && !over) && !pending;
+  const currentPreview = pdfPreview?.file === pdfFile && pdfPreview?.ocr === localOcr ? pdfPreview : null;
+  const candidateText = pdfFile ? currentPreview?.text ?? '' : text;
+  const phoneCandidates = useMemo(() => extractPhoneCandidates(candidateText), [candidateText]);
+
+  // An edited/replaced source needs a fresh selection and fresh consent. Keep
+  // country explicit, rather than carrying a previous document's context over.
+  useEffect(() => {
+    setCheckPhone(false);
+    setPhoneNumber('');
+    setPhoneCountry('');
+    setPdfPreview(null);
+  }, [text, pdfFile, localOcr]);
+
+  async function findPdfPhones() {
+    if (!pdfFile || pending) return;
+    setErr(null);
+    setPdfPreview(null);
+    try {
+      const result = await previewPdf.mutateAsync({ data: { file: pdfFile, localOcr: localOcr ? 'true' : 'false' } });
+      setPdfPreview({ file: pdfFile, ocr: localOcr, text: result.text, warning: result.warning });
+    } catch (error) { setErr(errorMessage(error)); }
+  }
 
   async function readFile(f: File) {
     if (pending) return;
@@ -148,6 +174,7 @@ function SingleForm() {
   }
 
   function applySample(s: (typeof SAMPLES)[number]) {
+    if (pending) return;
     setLocalOcr(false);
     setText(s.text);
     setSender(s.sender);
@@ -180,6 +207,7 @@ function SingleForm() {
   }
 
   async function submit() {
+    if (!canSubmit) return;
     setErr(null);
     if (checkPhone && (!/^[+\d\s().-]{6,40}$/.test(phoneNumber.trim()) || !phoneNumber.trim().startsWith('+') && !phoneNumber.trim().startsWith('00') && !/^[A-Z]{2}$/.test(phoneCountry))) {
       setErr('Enter a full international phone number beginning with +, or a local number with a two-letter country code.'); return;
@@ -225,6 +253,7 @@ function SingleForm() {
           {SAMPLES.map((s, i) => (
             <button
               key={s.label}
+              disabled={pending}
               onClick={() => applySample(s)}
               data-testid={`button-sample-${i}`}
               className={cn(
@@ -259,6 +288,19 @@ function SingleForm() {
               <span className="mt-1 block text-xs leading-relaxed text-muted-foreground">Optional English text recognition for scanned or mixed PDFs. Document bytes stay inside the app; no external OCR service receives them. Temporary page images are deleted after processing. OCR may misread or miss text; check the extracted evidence. This choice resets for each new file and is separate from external link checks.</span>
             </span>
           </label>
+          <div className="mt-4 space-y-2">
+            <Button type="button" variant="outline" onClick={findPdfPhones} disabled={pending} data-testid="button-find-pdf-phones">
+              {previewPdf.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {previewPdf.isPending ? 'Extracting for review…' : 'Find phone numbers in this PDF'}
+            </Button>
+            <p className="text-xs text-muted-foreground">Extracts text within the app only. Does not save a report or run external checks. Review and select a candidate below; OCR may misread numbers.</p>
+            {currentPreview && (
+              <div className="space-y-1 text-xs text-muted-foreground" role="status" data-testid="text-pdf-preview">
+                <p>Text extracted for review. {phoneCandidates.length} possible phone number(s) found; no number has been selected automatically.</p>
+                <p>{currentPreview.warning}</p>
+              </div>
+            )}
+          </div>
         </div>
       ) : (
       <div
@@ -269,6 +311,7 @@ function SingleForm() {
       >
         <Textarea
           value={text}
+          disabled={pending}
           onChange={(e) => { setText(e.target.value); setSample(null); }}
           placeholder="Paste the full offer here — the message body, any links, and the signature. The more context, the clearer the read."
           className="min-h-[240px] resize-y border-0 bg-transparent p-4 font-mono text-[13px] leading-relaxed shadow-none focus-visible:ring-0"
@@ -325,7 +368,7 @@ function SingleForm() {
       </div>
 
       <LinkConsent checked={checkLinks} onChange={setCheckLinks} disabled={pending} />
-      <PhoneConsent checked={checkPhone} onChange={setCheckPhone} number={phoneNumber} country={phoneCountry} onNumberChange={setPhoneNumber} onCountryChange={setPhoneCountry} disabled={pending} />
+      <PhoneConsent checked={checkPhone} onChange={setCheckPhone} number={phoneNumber} country={phoneCountry} onNumberChange={setPhoneNumber} onCountryChange={setPhoneCountry} candidates={phoneCandidates} disabled={pending} />
       <TextSearchConsent checked={checkSearch} onChange={setCheckSearch} phrase={searchPhrase} onPhraseChange={setSearchPhrase} disabled={pending} />
       <IpConsent checked={checkIp} onChange={setCheckIp} ip={ipAddress} onIpChange={setIpAddress} disabled={pending} />
 

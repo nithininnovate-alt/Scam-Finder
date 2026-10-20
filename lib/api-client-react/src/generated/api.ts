@@ -32,7 +32,9 @@ import type {
   NotificationPreferencesInput,
   NumverifyLimitsInput,
   NumverifyUsage,
+  PdfPreviewInput,
   PdfScanInput,
+  PdfTextPreview,
   Provider,
   ResendEventInput,
   Scan,
@@ -680,6 +682,82 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
         TContext
       > => {
       return useMutation(getSendTestEmailMutationOptions(options));
+    }
+
+export const getPreviewOfferPdfUrl = () => {
+
+
+
+
+  return `/api/scans/pdf/preview`
+}
+
+/**
+ * Extract text within the app for review only. Does not save a scan or call external lookup providers.
+ */
+export const previewOfferPdf = async (pdfPreviewInput: PdfPreviewInput, options?: Parameters<typeof customFetch>[1]): Promise<PdfTextPreview> => {
+    const formData = new FormData();
+formData.append(`file`, pdfPreviewInput.file);
+if(pdfPreviewInput.localOcr !== undefined) {
+ formData.append(`localOcr`, pdfPreviewInput.localOcr);
+ }
+
+  return customFetch<PdfTextPreview>(getPreviewOfferPdfUrl(),
+  {
+    ...options,
+    method: 'POST'
+    ,
+    body: formData
+  }
+);}
+
+
+
+
+
+export const getPreviewOfferPdfMutationKey = () => ['previewOfferPdf'] as const;
+
+export const getPreviewOfferPdfMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof previewOfferPdf>>, TError,PreviewOfferPdfMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof previewOfferPdf>>, TError,PreviewOfferPdfMutationVariables, TContext> => {
+
+const mutationKey = getPreviewOfferPdfMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof previewOfferPdf>>, PreviewOfferPdfMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  previewOfferPdf(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PreviewOfferPdfMutationResult = NonNullable<Awaited<ReturnType<typeof previewOfferPdf>>>
+    export type PreviewOfferPdfMutationBody = BodyType<PdfPreviewInput>
+    export type PreviewOfferPdfMutationError = ErrorType<void>
+    export type PreviewOfferPdfMutationVariables = {data: BodyType<PdfPreviewInput>}
+
+    export const usePreviewOfferPdf = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof previewOfferPdf>>, TError,PreviewOfferPdfMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof previewOfferPdf>>,
+        TError,
+        PreviewOfferPdfMutationVariables,
+        TContext
+      > => {
+      return useMutation(getPreviewOfferPdfMutationOptions(options));
     }
 
 export const getUploadPdfScanUrl = () => {

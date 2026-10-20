@@ -3,7 +3,6 @@ import { Router } from "express";
 import { rateLimit } from "express-rate-limit";
 import { eq } from "drizzle-orm";
 import { db, accountsTable, emailDeliveriesTable, integrationSettingsTable } from "@workspace/db";
-import { GetIntegrationSettingsResponse, UpdateIntegrationSettingsBody, UpdateNotificationPreferencesBody, GetNotificationPreferencesResponse } from "@workspace/api-zod";
 import { requireAdmin } from "../middlewares/scamfind-account";
 import { emailSettings, emailAvailability, verifiedRecipient, recentDeliveries, processEmailQueue } from "../lib/scamfind-email";
 import { probeWebRisk, webRiskHealth } from "../lib/scamfind-webrisk";
@@ -11,6 +10,8 @@ import { probeNumverify } from "../lib/scamfind-numverify";
 import { probeSerpApi } from "../lib/scamfind-serpapi";
 import { probeAbuseIp } from "../lib/scamfind-abuseipdb";
 import { logger } from "../lib/logger";
+import { GetIntegrationSettingsResponse, UpdateIntegrationSettingsBody, UpdateNotificationPreferencesBody, GetNotificationPreferencesResponse, UpdateNumverifyLimitsBody } from "@workspace/api-zod";
+import { numverifyUsage, updateNumverifyLimits } from "../lib/scamfind-numverify-quota";
 
 const router = Router();
 async function preferences(accountId: string) {
@@ -45,15 +46,20 @@ const admin = Router();
 admin.use(requireAdmin);
 const adminActions = rateLimit({ windowMs: 60000, limit: 3, standardHeaders: "draft-8", legacyHeaders: false, message: { error: "Please wait a minute before testing again." } });
 async function settingsResponse() {
-  const [settings, email, deliveries] = await Promise.all([emailSettings(), emailAvailability(), recentDeliveries()]);
+  const [settings, email, deliveries, usage] = await Promise.all([emailSettings(), emailAvailability(), recentDeliveries(), numverifyUsage()]);
   const risk = webRiskHealth();
   return GetIntegrationSettingsResponse.parse({
     ...settings, emailStatus: email.status, emailMessage: email.message,
     deliveryTrackingConfigured: !!process.env.RESEND_WEBHOOK_SECRET,
-    webRiskStatus: risk.status, webRiskMessage: risk.message, deliveries,
+    webRiskStatus: risk.status, webRiskMessage: risk.message, deliveries, numverifyUsage: usage,
   });
 }
 admin.get("/", async (_req, res): Promise<void> => { res.json(await settingsResponse()); });
+admin.patch("/numverify-limits", async (req, res): Promise<void> => {
+  const body = UpdateNumverifyLimitsBody.safeParse(req.body);
+  if (!body.success) { res.status(400).json({ error: "Enter daily and monthly limits as whole numbers from 0 to 2147483647." }); return; }
+  res.json(await updateNumverifyLimits(body.data));
+});
 admin.patch("/", async (req, res): Promise<void> => {
   const body = UpdateIntegrationSettingsBody.safeParse(req.body);
   if (!body.success) { res.status(400).json({ error: "Enter valid sender settings." }); return; }

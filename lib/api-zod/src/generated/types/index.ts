@@ -26,6 +26,8 @@ export * from './ipCheck';
 export * from './ipCheckStatus';
 export * from './notificationPreferences';
 export * from './notificationPreferencesInput';
+export * from './numverifyLimitsInput';
+export * from './numverifyUsage';
 export * from './pdfScanInput';
 export * from './pdfScanInputCheckIp';
 export * from './pdfScanInputCheckLinks';

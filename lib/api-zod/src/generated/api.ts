@@ -61,6 +61,20 @@ export const UpdateNotificationPreferencesResponse = zod.object({
 })
 
 
+export const getIntegrationSettingsResponseNumverifyUsageDailyLimitMin = 0;
+
+export const getIntegrationSettingsResponseNumverifyUsageMonthlyLimitMin = 0;
+
+export const getIntegrationSettingsResponseNumverifyUsageDailyUsedMin = 0;
+
+export const getIntegrationSettingsResponseNumverifyUsageMonthlyUsedMin = 0;
+
+export const getIntegrationSettingsResponseNumverifyUsageDailyRemainingMin = 0;
+
+export const getIntegrationSettingsResponseNumverifyUsageMonthlyRemainingMin = 0;
+
+
+
 export const GetIntegrationSettingsResponse = zod.object({
   "senderEmail": zod.string(),
   "senderName": zod.string(),
@@ -80,7 +94,17 @@ export const GetIntegrationSettingsResponse = zod.object({
   "deliveryState": zod.enum(['unconfirmed', 'accepted', 'delayed', 'delivered', 'failed', 'suppressed', 'bounced', 'complained']),
   "deliveryEventAt": zod.string().describe('Verified provider event timestamp or an empty string when none is known.')
 })),
-  "deliveryTrackingConfigured": zod.boolean().describe('Whether a webhook signing secret is configured; does not confirm provider setup.')
+  "deliveryTrackingConfigured": zod.boolean().describe('Whether a webhook signing secret is configured; does not confirm provider setup.'),
+  "numverifyUsage": zod.object({
+  "dailyLimit": zod.number().int().min(getIntegrationSettingsResponseNumverifyUsageDailyLimitMin),
+  "monthlyLimit": zod.number().int().min(getIntegrationSettingsResponseNumverifyUsageMonthlyLimitMin),
+  "dailyUsed": zod.number().int().min(getIntegrationSettingsResponseNumverifyUsageDailyUsedMin),
+  "monthlyUsed": zod.number().int().min(getIntegrationSettingsResponseNumverifyUsageMonthlyUsedMin),
+  "dailyRemaining": zod.number().int().min(getIntegrationSettingsResponseNumverifyUsageDailyRemainingMin),
+  "monthlyRemaining": zod.number().int().min(getIntegrationSettingsResponseNumverifyUsageMonthlyRemainingMin),
+  "dailyResetsAt": zod.coerce.date(),
+  "monthlyResetsAt": zod.coerce.date()
+}).describe('Aggregate application lookup reservations only. UTC calendar periods; failed attempts count, cached lookups and health checks do not. Not the provider billing balance.')
 })
 
 
@@ -95,6 +119,20 @@ export const UpdateIntegrationSettingsBody = zod.object({
   "senderName": zod.string().min(1).max(updateIntegrationSettingsBodySenderNameMax),
   "emailEnabled": zod.boolean()
 })
+
+export const updateIntegrationSettingsResponseNumverifyUsageDailyLimitMin = 0;
+
+export const updateIntegrationSettingsResponseNumverifyUsageMonthlyLimitMin = 0;
+
+export const updateIntegrationSettingsResponseNumverifyUsageDailyUsedMin = 0;
+
+export const updateIntegrationSettingsResponseNumverifyUsageMonthlyUsedMin = 0;
+
+export const updateIntegrationSettingsResponseNumverifyUsageDailyRemainingMin = 0;
+
+export const updateIntegrationSettingsResponseNumverifyUsageMonthlyRemainingMin = 0;
+
+
 
 export const UpdateIntegrationSettingsResponse = zod.object({
   "senderEmail": zod.string(),
@@ -115,8 +153,71 @@ export const UpdateIntegrationSettingsResponse = zod.object({
   "deliveryState": zod.enum(['unconfirmed', 'accepted', 'delayed', 'delivered', 'failed', 'suppressed', 'bounced', 'complained']),
   "deliveryEventAt": zod.string().describe('Verified provider event timestamp or an empty string when none is known.')
 })),
-  "deliveryTrackingConfigured": zod.boolean().describe('Whether a webhook signing secret is configured; does not confirm provider setup.')
+  "deliveryTrackingConfigured": zod.boolean().describe('Whether a webhook signing secret is configured; does not confirm provider setup.'),
+  "numverifyUsage": zod.object({
+  "dailyLimit": zod.number().int().min(updateIntegrationSettingsResponseNumverifyUsageDailyLimitMin),
+  "monthlyLimit": zod.number().int().min(updateIntegrationSettingsResponseNumverifyUsageMonthlyLimitMin),
+  "dailyUsed": zod.number().int().min(updateIntegrationSettingsResponseNumverifyUsageDailyUsedMin),
+  "monthlyUsed": zod.number().int().min(updateIntegrationSettingsResponseNumverifyUsageMonthlyUsedMin),
+  "dailyRemaining": zod.number().int().min(updateIntegrationSettingsResponseNumverifyUsageDailyRemainingMin),
+  "monthlyRemaining": zod.number().int().min(updateIntegrationSettingsResponseNumverifyUsageMonthlyRemainingMin),
+  "dailyResetsAt": zod.coerce.date(),
+  "monthlyResetsAt": zod.coerce.date()
+}).describe('Aggregate application lookup reservations only. UTC calendar periods; failed attempts count, cached lookups and health checks do not. Not the provider billing balance.')
 })
+
+
+export const updateNumverifyLimitsBodyDailyLimitMin = 0;
+export const updateNumverifyLimitsBodyDailyLimitMax = 2147483647;
+
+export const updateNumverifyLimitsBodyMonthlyLimitMin = 0;
+export const updateNumverifyLimitsBodyMonthlyLimitMax = 2147483647;
+
+
+
+export const UpdateNumverifyLimitsBody = zod.object({
+  "dailyLimit": zod.number().int().min(updateNumverifyLimitsBodyDailyLimitMin).max(updateNumverifyLimitsBodyDailyLimitMax),
+  "monthlyLimit": zod.number().int().min(updateNumverifyLimitsBodyMonthlyLimitMin).max(updateNumverifyLimitsBodyMonthlyLimitMax)
+})
+
+export const updateNumverifyLimitsResponseDailyLimitMin = 0;
+
+export const updateNumverifyLimitsResponseMonthlyLimitMin = 0;
+
+export const updateNumverifyLimitsResponseDailyUsedMin = 0;
+
+export const updateNumverifyLimitsResponseMonthlyUsedMin = 0;
+
+export const updateNumverifyLimitsResponseDailyRemainingMin = 0;
+
+export const updateNumverifyLimitsResponseMonthlyRemainingMin = 0;
+
+
+
+export const UpdateNumverifyLimitsResponse = zod.object({
+  "dailyLimit": zod.number().int().min(updateNumverifyLimitsResponseDailyLimitMin),
+  "monthlyLimit": zod.number().int().min(updateNumverifyLimitsResponseMonthlyLimitMin),
+  "dailyUsed": zod.number().int().min(updateNumverifyLimitsResponseDailyUsedMin),
+  "monthlyUsed": zod.number().int().min(updateNumverifyLimitsResponseMonthlyUsedMin),
+  "dailyRemaining": zod.number().int().min(updateNumverifyLimitsResponseDailyRemainingMin),
+  "monthlyRemaining": zod.number().int().min(updateNumverifyLimitsResponseMonthlyRemainingMin),
+  "dailyResetsAt": zod.coerce.date(),
+  "monthlyResetsAt": zod.coerce.date()
+}).describe('Aggregate application lookup reservations only. UTC calendar periods; failed attempts count, cached lookups and health checks do not. Not the provider billing balance.')
+
+
+export const refreshIntegrationStatusResponseNumverifyUsageDailyLimitMin = 0;
+
+export const refreshIntegrationStatusResponseNumverifyUsageMonthlyLimitMin = 0;
+
+export const refreshIntegrationStatusResponseNumverifyUsageDailyUsedMin = 0;
+
+export const refreshIntegrationStatusResponseNumverifyUsageMonthlyUsedMin = 0;
+
+export const refreshIntegrationStatusResponseNumverifyUsageDailyRemainingMin = 0;
+
+export const refreshIntegrationStatusResponseNumverifyUsageMonthlyRemainingMin = 0;
+
 
 
 export const RefreshIntegrationStatusResponse = zod.object({
@@ -138,7 +239,17 @@ export const RefreshIntegrationStatusResponse = zod.object({
   "deliveryState": zod.enum(['unconfirmed', 'accepted', 'delayed', 'delivered', 'failed', 'suppressed', 'bounced', 'complained']),
   "deliveryEventAt": zod.string().describe('Verified provider event timestamp or an empty string when none is known.')
 })),
-  "deliveryTrackingConfigured": zod.boolean().describe('Whether a webhook signing secret is configured; does not confirm provider setup.')
+  "deliveryTrackingConfigured": zod.boolean().describe('Whether a webhook signing secret is configured; does not confirm provider setup.'),
+  "numverifyUsage": zod.object({
+  "dailyLimit": zod.number().int().min(refreshIntegrationStatusResponseNumverifyUsageDailyLimitMin),
+  "monthlyLimit": zod.number().int().min(refreshIntegrationStatusResponseNumverifyUsageMonthlyLimitMin),
+  "dailyUsed": zod.number().int().min(refreshIntegrationStatusResponseNumverifyUsageDailyUsedMin),
+  "monthlyUsed": zod.number().int().min(refreshIntegrationStatusResponseNumverifyUsageMonthlyUsedMin),
+  "dailyRemaining": zod.number().int().min(refreshIntegrationStatusResponseNumverifyUsageDailyRemainingMin),
+  "monthlyRemaining": zod.number().int().min(refreshIntegrationStatusResponseNumverifyUsageMonthlyRemainingMin),
+  "dailyResetsAt": zod.coerce.date(),
+  "monthlyResetsAt": zod.coerce.date()
+}).describe('Aggregate application lookup reservations only. UTC calendar periods; failed attempts count, cached lookups and health checks do not. Not the provider billing balance.')
 })
 
 

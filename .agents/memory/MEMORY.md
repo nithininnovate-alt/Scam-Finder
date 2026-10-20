@@ -4,3 +4,4 @@
 - [Local OCR privacy](local-ocr-privacy.md) — user chose local document OCR rather than an external provider; do not silently fall back to hosted processing.
 - [Email provider compatibility](email-provider-compatibility.md) — verify SDK return contracts and fixture-process exits; provider examples may target an older major version.
 - [Auth test readiness](auth-test-readiness.md) — programmatic sessions can work before browser auth hooks finish loading; wait for client readiness before diagnosing failure.
+- [Phone quota policy](phone-quota-policy.md) — default allowances preserve prior safety behavior, not inferred provider entitlements; provider plans remain owner-managed.

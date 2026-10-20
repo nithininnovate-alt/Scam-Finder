@@ -8,6 +8,7 @@
 import type { EmailDelivery } from './emailDelivery';
 import type { IntegrationSettingsEmailStatus } from './integrationSettingsEmailStatus';
 import type { IntegrationSettingsWebRiskStatus } from './integrationSettingsWebRiskStatus';
+import type { NumverifyUsage } from './numverifyUsage';
 
 export interface IntegrationSettings {
   senderEmail: string;
@@ -20,4 +21,5 @@ export interface IntegrationSettings {
   deliveries: EmailDelivery[];
   /** Whether a webhook signing secret is configured; does not confirm provider setup. */
   deliveryTrackingConfigured: boolean;
+  numverifyUsage: NumverifyUsage;
 }

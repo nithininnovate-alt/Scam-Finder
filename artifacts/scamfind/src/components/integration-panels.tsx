@@ -16,6 +16,7 @@ import { useToast } from '@/hooks/use-toast';
 import { ErrorPanel } from '@/components/scan-bits';
 import { errorMessage, utc } from '@/lib/scan-utils';
 import { cn } from '@/lib/utils';
+import { NumverifyLimitsPanel } from '@/components/numverify-limits-panel';
 
 type Status = IntegrationSettings['emailStatus'];
 export const STATUS_META: Record<Status, { label: string; cls: string }> = {
@@ -129,7 +130,7 @@ export function AdminIntegrationPanel() {
       <div className="ledger pointer-events-none absolute inset-0 opacity-20" />
       <div className="relative">
         <div className="mb-1 font-mono text-[11px] uppercase tracking-[0.2em] text-primary">Reviewer controls</div>
-        <h2 className="text-2xl font-semibold">Email sender and connection health</h2>
+        <h2 className="text-2xl font-semibold">Integrations and usage limits</h2>
         <p className="mt-1 max-w-2xl text-sm text-muted-foreground">Settings apply to every account. Keys stay on the server and are never shown here.</p>
 
         <div className="mt-6 grid gap-4 md:grid-cols-2">
@@ -148,6 +149,8 @@ export function AdminIntegrationPanel() {
           {check.isPending ? <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="mr-2 h-3.5 w-3.5" />} Re-check connections
         </Button>
         <span className="ml-3 text-xs text-muted-foreground">Checks health only. Sends nothing.</span>
+
+        <NumverifyLimitsPanel usage={data.numverifyUsage} />
 
         <div className="mt-8 grid gap-4 md:grid-cols-2">
           <div className="space-y-1.5">

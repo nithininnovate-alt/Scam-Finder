@@ -6,6 +6,8 @@ export const integrationSettingsTable = pgTable("scamfind_integration_settings",
   senderEmail: text("sender_email").notNull().default(""),
   senderName: text("sender_name").notNull().default("ScamFind"),
   emailEnabled: boolean("email_enabled").notNull().default(false),
+  numverifyDailyLimit: integer("numverify_daily_limit").notNull().default(100),
+  numverifyMonthlyLimit: integer("numverify_monthly_limit").notNull().default(3100),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
 

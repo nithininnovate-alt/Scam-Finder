@@ -107,6 +107,39 @@ export interface IntegrationSettingsInput {
   emailEnabled: boolean;
 }
 
+export interface NumverifyLimitsInput {
+  /**
+     * @minimum 0
+     * @maximum 2147483647
+     */
+  dailyLimit: number;
+  /**
+     * @minimum 0
+     * @maximum 2147483647
+     */
+  monthlyLimit: number;
+}
+
+/**
+ * Aggregate application lookup reservations only. UTC calendar periods; failed attempts count, cached lookups and health checks do not. Not the provider billing balance.
+ */
+export interface NumverifyUsage {
+  /** @minimum 0 */
+  dailyLimit: number;
+  /** @minimum 0 */
+  monthlyLimit: number;
+  /** @minimum 0 */
+  dailyUsed: number;
+  /** @minimum 0 */
+  monthlyUsed: number;
+  /** @minimum 0 */
+  dailyRemaining: number;
+  /** @minimum 0 */
+  monthlyRemaining: number;
+  dailyResetsAt: string;
+  monthlyResetsAt: string;
+}
+
 export type IntegrationSettingsEmailStatus = typeof IntegrationSettingsEmailStatus[keyof typeof IntegrationSettingsEmailStatus];
 
 
@@ -184,6 +217,7 @@ export interface IntegrationSettings {
   deliveries: EmailDelivery[];
   /** Whether a webhook signing secret is configured; does not confirm provider setup. */
   deliveryTrackingConfigured: boolean;
+  numverifyUsage: NumverifyUsage;
 }
 
 export type UrlCheckStatus = typeof UrlCheckStatus[keyof typeof UrlCheckStatus];

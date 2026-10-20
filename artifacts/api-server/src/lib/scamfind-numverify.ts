@@ -1,5 +1,4 @@
-import { db, integrationUsageTable } from "@workspace/db";
-import { sql } from "drizzle-orm";
+import { reserveNumverifyLookup } from "./scamfind-numverify-quota";
 import { digest } from "./scamfind-crypto";
 import type { Scan } from "./scamfind-analysis";
 
@@ -10,7 +9,6 @@ let verifiedUntil = 0;
 let probe: Promise<Health> | undefined;
 const cache = new Map<string, { until: number; result: PhoneCheck }>();
 const pending = new Map<string, Promise<PhoneCheck>>();
-const DAILY_LIMIT = 100;
 
 export function numverifyHealth(): Health {
   return process.env.NUMVERIFY_API_KEY ? health : { status: "not_connected", message: "A Numverify API key has not been configured." };
@@ -87,12 +85,7 @@ export async function checkPhoneNumber(raw: string | undefined, country: string 
   if (pending.has(key)) return pending.get(key)!;
   const operation = (async () => {
     try {
-      const rows = await db.insert(integrationUsageTable).values({ key: `numverify:${new Date().toISOString().slice(0, 10)}`, used: 1 }).onConflictDoUpdate({
-        target: integrationUsageTable.key,
-        set: { used: sql`${integrationUsageTable.used} + 1` },
-        setWhere: sql`${integrationUsageTable.used} < ${DAILY_LIMIT}`,
-      }).returning();
-      if (!rows.length) return result("unavailable", "The application's daily safety limit of 100 Numverify lookups has been reached. Try again tomorrow (UTC). Provider quotas may be lower.");
+      if (!await reserveNumverifyLookup()) return result("unavailable", "The application's phone lookup allowance has been reached or paused. Contact an administrator or try after the next UTC reset. Provider quotas may be lower.");
       const body = await request("validate", { number: input.number, ...(input.country ? { country_code: input.country } : {}) });
       if (typeof body.valid !== "boolean") throw new Error("Numverify returned an incomplete validation response.");
       const text = (value: unknown) => typeof value === "string" ? value.slice(0, 160) : "";

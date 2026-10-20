@@ -3,6 +3,7 @@ import { logger } from "./lib/logger";
 import { purgeExpiredScans } from "./lib/scamfind-store";
 import { processEmailQueue } from "./lib/scamfind-email";
 import { probeWebRisk } from "./lib/scamfind-webrisk";
+import { ensureNumverifyQuotaSchema } from "./lib/scamfind-numverify-quota";
 
 const rawPort = process.env["PORT"];
 
@@ -16,6 +17,13 @@ const port = Number(rawPort);
 
 if (Number.isNaN(port) || port <= 0) {
   throw new Error(`Invalid PORT value: "${rawPort}"`);
+}
+
+try {
+  await ensureNumverifyQuotaSchema();
+} catch {
+  logger.error("Unable to prepare phone quota settings; server was not started");
+  process.exit(1);
 }
 
 app.listen(port, (err) => {

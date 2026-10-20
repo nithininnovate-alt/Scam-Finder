@@ -86,6 +86,27 @@ paths:
           content:
             application/json:
               schema: {$ref: "#/components/schemas/IntegrationSettings"}
+  /admin/integrations/numverify-limits:
+    patch:
+      operationId: updateNumverifyLimits
+      tags: [admin]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/NumverifyLimitsInput"}
+      responses:
+        "200":
+          description: Updated shared limits and aggregate usage, administrators only
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/NumverifyUsage"}
+        "400":
+          description: Limits must be whole numbers from zero to 2147483647
+        "401":
+          description: Sign-in required
+        "403":
+          description: Administrator access required
   /admin/integrations/check:
     post:
       operationId: refreshIntegrationStatus
@@ -379,9 +400,29 @@ components:
         senderEmail: {type: string, maxLength: 320}
         senderName: {type: string, minLength: 1, maxLength: 80}
         emailEnabled: {type: boolean}
+    NumverifyLimitsInput:
+      type: object
+      additionalProperties: false
+      required: [dailyLimit, monthlyLimit]
+      properties:
+        dailyLimit: {type: integer, minimum: 0, maximum: 2147483647}
+        monthlyLimit: {type: integer, minimum: 0, maximum: 2147483647}
+    NumverifyUsage:
+      type: object
+      description: Aggregate application lookup reservations only. UTC calendar periods; failed attempts count, cached lookups and health checks do not. Not the provider billing balance.
+      required: [dailyLimit, monthlyLimit, dailyUsed, monthlyUsed, dailyRemaining, monthlyRemaining, dailyResetsAt, monthlyResetsAt]
+      properties:
+        dailyLimit: {type: integer, minimum: 0}
+        monthlyLimit: {type: integer, minimum: 0}
+        dailyUsed: {type: integer, minimum: 0}
+        monthlyUsed: {type: integer, minimum: 0}
+        dailyRemaining: {type: integer, minimum: 0}
+        monthlyRemaining: {type: integer, minimum: 0}
+        dailyResetsAt: {type: string, format: date-time}
+        monthlyResetsAt: {type: string, format: date-time}
     IntegrationSettings:
       type: object
-      required: [senderEmail, senderName, emailEnabled, emailStatus, emailMessage, webRiskStatus, webRiskMessage, deliveries, deliveryTrackingConfigured]
+      required: [senderEmail, senderName, emailEnabled, emailStatus, emailMessage, webRiskStatus, webRiskMessage, deliveries, deliveryTrackingConfigured, numverifyUsage]
       properties:
         senderEmail: {type: string}
         senderName: {type: string}
@@ -392,6 +433,7 @@ components:
         webRiskMessage: {type: string}
         deliveries: {type: array, items: {$ref: "#/components/schemas/EmailDelivery"}}
         deliveryTrackingConfigured: {type: boolean, description: Whether a webhook signing secret is configured; does not confirm provider setup.}
+        numverifyUsage: {$ref: "#/components/schemas/NumverifyUsage"}
     EmailDelivery:
       type: object
       required: [id, type, status, createdAt, attempts, recipient, error, deliveryState, deliveryEventAt]
@@ -604,4 +646,3 @@ components:
           type: string
       required:
         - status
-
